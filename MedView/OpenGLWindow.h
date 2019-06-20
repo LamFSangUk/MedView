@@ -1,39 +1,33 @@
-#pragma once
+#ifndef __OPENGLWINDOW__
+#define __OPENGLWINDOW__
 
-#include <QtGui/QWindow>
-#include <QtGui/QOpenGLFunctions>
+#include <QOpenGLWidget>
+#include <QOpenGLFunctions>
+#include <QOpenGLBuffer>
+#include <QOpenGLVertexArrayObject>
 
-class QPainter;
-class QOpenGLContext;
-class QOpenGLPaintDevice;
+class QOpenGLShaderProgram;
 
-class MedView : public QWindow, protected QOpenGLFunctions
+class OpenGLWidget : public QOpenGLWidget, protected QOpenGLFunctions
 {
 	Q_OBJECT
 public:
-	explicit MedView(QWindow *parent = Q_NULLPTR);
-	/*~MedView();
+	OpenGLWidget();
+	//~OpenGLWindow();
 
-	virtual void render(QPainter *painter);
-	virtual void render();
-
-	virtual void initialize();
-
-	void setAnimating(bool animating);
-	*/
-public slots:
-	/*void renderLater();
-	void renderNow();*/
+	void loadObject();
 
 protected:
-	/*
-	bool event(QEvent *event) override;
-
-	void exposeEvent(QExposeEvent *event) override;
-	*/
+	void initializeGL();
+	void paintGL() Q_DECL_OVERRIDE;
+	//void resizeGL(int w, int h) Q_DECL_OVERRIDE;
 
 private:
-	bool m_animating;
-	QOpenGLContext *m_context;
-	QOpenGLPaintDevice *m_device;
+
+	QOpenGLBuffer m_vertex;
+	QOpenGLVertexArrayObject m_object;
+	QOpenGLShaderProgram *m_program;
+
 };
+
+#endif // __OPENGLWINDOW__

@@ -1,14 +1,21 @@
-#include "MedView.h"
+#include "MainWidget.h"
 
-#include <QtGui/QGuiApplication>
-#include <QtGui/QMatrix4x4>
-#include <QtGui/QOpenGLShaderProgram>
-#include <QtGui/QScreen>
+#include <QApplication>
 
 int main(int argc, char *argv[])
 {
-	QGuiApplication app(argc, argv);
-	MedView w;
-	w.show();
+	QApplication app(argc, argv);
+
+	/*QSurfaceFormat format;
+	format.setRenderableType(QSurfaceFormat::OpenGL);
+	format.setProfile(QSurfaceFormat::CoreProfile);
+	format.setVersion(3, 3);*/
+
+	MainWindow window;
+	//window.setFormat(format);
+	//window.resize(640, 480);
+
+	window.show();
+
 	return app.exec();
 }
