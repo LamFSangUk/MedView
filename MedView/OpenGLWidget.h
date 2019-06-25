@@ -1,5 +1,5 @@
-#ifndef __OPENGLWINDOW__
-#define __OPENGLWINDOW__
+#ifndef __OPENGLWIDGET__
+#define __OPENGLWIDGET__
 
 #include <QOpenGLWidget>
 #include <QOpenGLFunctions>

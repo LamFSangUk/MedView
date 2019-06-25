@@ -1,9 +1,10 @@
-#include "MainWidget.h"
-#include "ImageViewWidget.h"
-#include "OpenGLWindow.h"
+#include "MainWindow.h"
+#include "OpenGLWidget.h"
 
 #include <QLayout>
 #include <QMenuBar>
+
+#include "volume.h"
 
 MainWindow::MainWindow() {
 	this->resize(m_width, m_height);
@@ -18,14 +19,14 @@ void MainWindow::buildLayout() {
 
 	QGridLayout *layout = new QGridLayout(window);
 
-	QWidget *axialView = new ImageViewWidget();
-	QWidget *coronialView = new ImageViewWidget();
-	QWidget *sagittalView = new ImageViewWidget();
+	this->m_axial_view = new ImageViewWidget();
+	this->m_coronial_view = new ImageViewWidget();
+	this->m_sagittal_view = new ImageViewWidget();
 	QWidget *vrView = new OpenGLWidget();
 
-	layout->addWidget(axialView, 0, 0);
-	layout->addWidget(coronialView, 0, 1);
-	layout->addWidget(sagittalView, 1, 0);
+	layout->addWidget((QWidget*)m_axial_view, 0, 0);
+	layout->addWidget((QWidget*)m_coronial_view, 0, 1);
+	layout->addWidget((QWidget*)m_sagittal_view, 1, 0);
 	layout->addWidget(vrView,1,1);
 
 	window->setLayout(layout);
@@ -50,7 +51,9 @@ void MainWindow::createMenuBar() {
 }
 
 void MainWindow::open() {
+	vdcm::Volume* vol = vdcm::read("./dicom_ct_sample");
 
+	this->m_axial_view->setVolume(vol);
 }
 
 void MainWindow::quit() {

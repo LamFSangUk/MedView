@@ -1,4 +1,4 @@
-#include "OpenGLWIndow.h"
+#include "OpenGLWidget.h"
 #include <QOpenGLShaderProgram>
 #include "vertex.h"
 
