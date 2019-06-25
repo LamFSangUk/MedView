@@ -3,8 +3,10 @@
 #include <algorithm>
 #include <climits>
 
-ImageViewWidget::ImageViewWidget() {
+ImageViewWidget::ImageViewWidget(int mode) {
 	this->setText("hello");
+
+	this->m_mode = mode;
 }
 
 void ImageViewWidget::setVolume(vdcm::Volume* vol) {
@@ -16,8 +18,31 @@ void ImageViewWidget::setVolume(vdcm::Volume* vol) {
 void ImageViewWidget::draw() {
 
 	qDebug("drawing");
-	std::vector<uint16_t> slice = m_volume->getAxialSlice(0);
-	qDebug("%d", slice.size());
+	std::vector<uint16_t> slice;
+	int width = 0;
+	int height = 0;
+
+	switch (this->m_mode) {
+		case MODE_AXIAL:
+			slice = m_volume->getAxialSlice(50);
+			width = m_volume->getWidth();
+			height = m_volume->getHeight();
+			break;
+		case MODE_CORONAL:
+			slice = m_volume->getCoronalSlice(250);
+			width = m_volume->getWidth();
+			height = m_volume->getDepth();
+			break;
+		case MODE_SAGITTAL:
+			slice = m_volume->getSagittalSlice(300);
+			width = m_volume->getHeight();
+			height = m_volume->getDepth();
+			break;
+		default:
+			throw std::runtime_error("Not assigned Mode");
+			return;
+	}
+	qDebug("w,h:%d %d\n",width,height);
 
 	// Clamp vector
 	/*for (int i = 0; i < slice.size(); i++) {
@@ -33,7 +58,7 @@ void ImageViewWidget::draw() {
 		if (min > val) slice[i] = min;
 	}*/
 
-	uint16_t max = 0;
+	/*uint16_t max = 0;
 	uint16_t min = UINT16_MAX;
 	for (int i = 0; i < slice.size(); i++) {
 		uint16_t val = (uint16_t)slice[i];
@@ -54,12 +79,12 @@ void ImageViewWidget::draw() {
 
 	printf("ba:%d", byteArray.size());*/
 
-	QImage img(512,512,QImage::Format_RGBA64);
+	QImage img(width,height,QImage::Format_RGBA64);
 	//img = QImage::fromData(byteArray);
 
-	for (int i = 0; i < 512; i++) {
-		for (int j = 0; j < 512; j++) {
-			QRgb val = qRgb(slice[i * 512 + j], slice[i * 512 + j], slice[i * 512 + j]);
+	for (int i = 0; i < height; i++) {
+		for (int j = 0; j < width; j++) {
+			QRgb val = qRgb(slice[i * width + j], slice[i * width + j], slice[i * width + j]);
 			img.setPixel(j, i, val);
 		}
 	}

@@ -19,9 +19,9 @@ void MainWindow::buildLayout() {
 
 	QGridLayout *layout = new QGridLayout(window);
 
-	this->m_axial_view = new ImageViewWidget();
-	this->m_coronial_view = new ImageViewWidget();
-	this->m_sagittal_view = new ImageViewWidget();
+	this->m_axial_view = new ImageViewWidget(MODE_AXIAL);
+	this->m_coronial_view = new ImageViewWidget(MODE_CORONAL);
+	this->m_sagittal_view = new ImageViewWidget(MODE_SAGITTAL);
 	QWidget *vrView = new OpenGLWidget();
 
 	layout->addWidget((QWidget*)m_axial_view, 0, 0);
@@ -51,9 +51,12 @@ void MainWindow::createMenuBar() {
 }
 
 void MainWindow::open() {
-	vdcm::Volume* vol = vdcm::read("./dicom_ct_sample");
+	vdcm::Volume* vol = vdcm::read("./35515591");
 
 	this->m_axial_view->setVolume(vol);
+	this->m_coronial_view->setVolume(vol);
+	this->m_sagittal_view->setVolume(vol);
+
 }
 
 void MainWindow::quit() {
