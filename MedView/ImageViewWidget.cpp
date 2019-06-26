@@ -78,9 +78,8 @@ void ImageViewWidget::draw() {
 			slice = m_volume->getSagittalSlice(m_idx_slice);
 			width = m_volume->getHeight();
 			height = m_volume->getDepth();
-
-			this->m_idx_max = m_volume->getWidth() - 1;
 			break;
+
 		default:
 			throw std::runtime_error("Not assigned Mode");
 			return;

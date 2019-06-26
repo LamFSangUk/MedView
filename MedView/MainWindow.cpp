@@ -4,6 +4,7 @@
 #include <QLayout>
 #include <QMenuBar>
 #include <QSize>
+#include <QFileDialog>
 
 #include "volume.h"
 
@@ -110,13 +111,17 @@ void MainWindow::createMenuBar() {
 	connect(openAction, &QAction::triggered, this, &MainWindow::open);
 	connect(quitAction, &QAction::triggered, this, &MainWindow::quit);
 }
-
+#include<iostream>
 void MainWindow::open() {
-	vdcm::Volume* vol = vdcm::read("./35515591");
+	QString str_dicom_folder = QFileDialog::getExistingDirectory(this, "Open DICOM folder", QDir::homePath(), QFileDialog::ShowDirsOnly);
 
-	this->m_axial_view->setVolume(vol);
-	this->m_coronal_view->setVolume(vol);
-	this->m_sagittal_view->setVolume(vol);
+	if (!str_dicom_folder.isEmpty() && !str_dicom_folder.isNull()) {
+		vdcm::Volume* vol = vdcm::read(str_dicom_folder.toUtf8().toStdString().c_str());
+
+		this->m_axial_view->setVolume(vol);
+		this->m_coronal_view->setVolume(vol);
+		this->m_sagittal_view->setVolume(vol);
+	}
 }
 
 void MainWindow::quit() {

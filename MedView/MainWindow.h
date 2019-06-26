@@ -12,16 +12,16 @@ class MainWindow : public QMainWindow
 public:
 	MainWindow();
 
+private slots:
+	void open();
+	void quit();
+
 private:
 	void buildLayout();
 	void createMenuBar();
 
 	const int m_height = 1080;
 	const int m_width = 1280;
-
-private slots:
-	void open();
-	void quit();
 
 	ImageViewWidget *m_axial_view;
 	ImageViewWidget *m_coronal_view;
