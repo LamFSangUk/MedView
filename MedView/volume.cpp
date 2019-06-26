@@ -83,12 +83,9 @@ namespace vdcm {
 		for (int i = 0; i < m_depth; i++) {
 			for (int j = 0; j < m_width; j++) {
 				uint16_t val = m_volume_data[i][idx * m_width + j];
-				if (j == 32) printf("%d ", val);
 				slice.push_back(val);
 			}
-			printf("\n");
 		}
-		printf("size:%d\n", slice.size());
 
 		return slice;
 	}

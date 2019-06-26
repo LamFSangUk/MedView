@@ -3,6 +3,8 @@
 
 #include <QMainWindow>
 #include <QApplication>
+#include <QSlider>
+
 #include "ImageViewWidget.h"
 
 class MainWindow : public QMainWindow
@@ -22,8 +24,11 @@ private slots:
 	void quit();
 
 	ImageViewWidget *m_axial_view;
-	ImageViewWidget *m_coronial_view;
+	ImageViewWidget *m_coronal_view;
 	ImageViewWidget *m_sagittal_view;
+	QSlider *m_axial_slider;
+	QSlider *m_coronal_slider;
+	QSlider *m_sagital_slider;
 };
 
 #endif //__MAIN_WINDOW__

@@ -4,13 +4,52 @@
 #include <climits>
 
 ImageViewWidget::ImageViewWidget(int mode) {
-	this->setText("hello");
+	this->setText("hello");	
 
 	this->m_mode = mode;
+
+	this->m_idx_slice = 0;
+	this->m_idx_max = 0;
 }
 
 void ImageViewWidget::setVolume(vdcm::Volume* vol) {
 	this->m_volume = vol;
+
+	// Set default slice
+	switch (this->m_mode) {
+		case MODE_AXIAL:
+			this->m_idx_max = m_volume->getDepth() - 1;
+			break;
+
+		case MODE_CORONAL:
+			this->m_idx_max = m_volume->getHeight() - 1;
+			break;
+
+		case MODE_SAGITTAL:
+			this->m_idx_max = m_volume->getWidth() - 1;
+			break;
+
+		default:
+			throw std::runtime_error("Not assigned Mode");
+			return;
+	}
+	this->m_idx_slice = this->m_idx_max / 2;
+
+	// Connect slider and slice_idx value
+	m_slider->setEnabled(true);
+	connect(m_slider, SIGNAL(valueChanged(int)), this, SLOT(setIndex(int)));
+
+	m_slider->setMinimum(0);
+	m_slider->setMaximum(this->m_idx_max);
+	m_slider->setValue(this->m_idx_slice);
+}
+
+void ImageViewWidget::setSlider(QSlider* slider) {
+	this->m_slider = slider;
+}
+
+void ImageViewWidget::setIndex(int idx) {
+	this->m_idx_slice = idx;
 
 	this->draw();
 }
@@ -24,25 +63,28 @@ void ImageViewWidget::draw() {
 
 	switch (this->m_mode) {
 		case MODE_AXIAL:
-			slice = m_volume->getAxialSlice(50);
+			slice = m_volume->getAxialSlice(m_idx_slice);
 			width = m_volume->getWidth();
 			height = m_volume->getHeight();
 			break;
+
 		case MODE_CORONAL:
-			slice = m_volume->getCoronalSlice(250);
+			slice = m_volume->getCoronalSlice(m_idx_slice);
 			width = m_volume->getWidth();
 			height = m_volume->getDepth();
 			break;
+
 		case MODE_SAGITTAL:
-			slice = m_volume->getSagittalSlice(300);
+			slice = m_volume->getSagittalSlice(m_idx_slice);
 			width = m_volume->getHeight();
 			height = m_volume->getDepth();
+
+			this->m_idx_max = m_volume->getWidth() - 1;
 			break;
 		default:
 			throw std::runtime_error("Not assigned Mode");
 			return;
 	}
-	qDebug("w,h:%d %d\n",width,height);
 
 	// Clamp vector
 	/*for (int i = 0; i < slice.size(); i++) {
