@@ -3,7 +3,10 @@
 
 #include <QLabel>
 #include <QSlider>
+#include <QTextEdit>
+
 #include "volume.h"
+#include "CursorCoordinator.h"
 
 #define MODE_AXIAL 0
 #define MODE_SAGITTAL 1
@@ -19,6 +22,11 @@ public:
 
 	void setSlider(QSlider*);
 
+	void mouseMoveEvent(QMouseEvent *e) override;
+
+signals:
+	void changeCoords(int, int, int);
+
 private slots:
 	void setIndex(int);
 
@@ -30,6 +38,7 @@ private:
 	vdcm::Volume* m_volume;
 	
 	QSlider* m_slider;
+	CursorCoordinator* m_cur_coord;
 
 	void draw();
 };

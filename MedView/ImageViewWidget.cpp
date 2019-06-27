@@ -1,15 +1,30 @@
 #include "ImageViewWidget.h"
 
+#include <QPalette>
+#include <QMouseEvent>
+
 #include <algorithm>
 #include <climits>
 
 ImageViewWidget::ImageViewWidget(int mode) {
-	this->setText("hello");	
+
+	// Set default background color
+	this->setStyleSheet("QLabel { background-color : black; }");
 
 	this->m_mode = mode;
 
 	this->m_idx_slice = 0;
 	this->m_idx_max = 0;
+
+	// For tracking mouse
+	this->setMouseTracking(true);
+
+	// Display mouse coordinate
+	this->m_cur_coord = new CursorCoordinator(this);
+
+	this->m_cur_coord->move(QPoint(40, 40));
+	this->m_cur_coord->show();
+	connect(this, SIGNAL(changeCoords(int, int, int)), this->m_cur_coord, SLOT(setCoord(int, int, int)));
 }
 
 void ImageViewWidget::setVolume(vdcm::Volume* vol) {
@@ -143,4 +158,14 @@ void ImageViewWidget::draw() {
 	pixmap = pixmap.scaled(this->size(), Qt::KeepAspectRatio);
 	this->setPixmap(pixmap);*/
 	//this->show();
+}
+#include <QDebug>
+void ImageViewWidget::mouseMoveEvent(QMouseEvent *e) {
+	qDebug() << e->pos();
+	qDebug() << e->x() << e->y();
+	int x = e->x();
+	int y = e->y();
+	int z = 0;
+
+	emit changeCoords(x, y, z);
 }

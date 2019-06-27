@@ -46,7 +46,6 @@ void MainWindow::buildLayout() {
 
 	axial_layout->addWidget(m_axial_view,Qt::AlignCenter);
 	axial_layout->addWidget(m_axial_slider,0,Qt::AlignBottom);
-	m_axial_slider->setParent(m_axial_view);
 
 	/* Coronal View*/
 	QVBoxLayout *coronal_layout = new QVBoxLayout();
@@ -79,7 +78,6 @@ void MainWindow::buildLayout() {
 	m_sagital_slider->setObjectName("slider");
 	m_sagittal_view->setSlider(m_sagital_slider);
 
-
 	sagittal_layout->addWidget(m_sagittal_view, Qt::AlignCenter);
 	sagittal_layout->addWidget(m_sagital_slider, 0, Qt::AlignBottom);
 
@@ -103,15 +101,19 @@ void MainWindow::createMenuBar() {
 	file = menuBar()->addMenu("&File");
 
 	QAction *openAction = new QAction("&Open", this);
+	openAction->setShortcut(Qt::Key_O | Qt::CTRL);
 	file->addAction(openAction);
 
+	file->addSeparator();
+
 	QAction *quitAction = new QAction("&Quit", this);
+	quitAction->setShortcut(Qt::Key_Q | Qt::CTRL);
 	file->addAction(quitAction);
 
-	connect(openAction, &QAction::triggered, this, &MainWindow::open);
-	connect(quitAction, &QAction::triggered, this, &MainWindow::quit);
+	connect(openAction, SIGNAL(triggered()), this, SLOT(open()));
+	connect(quitAction, SIGNAL(triggered()), this, SLOT(quit()));
 }
-#include<iostream>
+
 void MainWindow::open() {
 	QString str_dicom_folder = QFileDialog::getExistingDirectory(this, "Open DICOM folder", QDir::homePath(), QFileDialog::ShowDirsOnly);
 

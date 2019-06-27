@@ -45,6 +45,15 @@
     <ClCompile Include="volume.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="CursorCoordinator.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="axes.h">
+      <Filter>Header Files</Filter>
+    </ClCompile>
+    <ClCompile Include="axes.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <QtUic Include="MedView.ui">
@@ -60,10 +69,10 @@
     <ClInclude Include="vertex.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="MainWindow.h">
+    <ClInclude Include="volume.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="volume.h">
+    <ClInclude Include="resource.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -74,5 +83,14 @@
     <QtMoc Include="ImageViewWidget.h">
       <Filter>Header Files</Filter>
     </QtMoc>
+    <QtMoc Include="CursorCoordinator.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="MainWindow.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="MedView.rc" />
   </ItemGroup>
 </Project>
