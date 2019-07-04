@@ -1,62 +1,86 @@
 #include "ImageViewWidget.h"
+#include "DicomManager.h"
 
-#include <QPalette>
-#include <QMouseEvent>
+#include <QLayout>
 
 #include <algorithm>
 #include <climits>
 
-ImageViewWidget::ImageViewWidget(int mode) {
+#include <QDebug>
 
-	// Set default background color
-	this->setStyleSheet("QLabel { background-color : black; }");
-
+ImageViewWidget::ImageViewWidget(int mode, DicomManager *dicom_manager,QWidget* parent=NULL)
+ : QWidget(parent)
+{
 	this->m_mode = mode;
+
+	this->m_dicom_manager = dicom_manager;
 
 	this->m_idx_slice = 0;
 	this->m_idx_max = 0;
 
-	// For tracking mouse
-	this->setMouseTracking(true);
+	// Set Layout
+	this->buildLayout();
 
-	// Display mouse coordinate
-	this->m_cur_coord = new CursorCoordinator(this);
-
-	this->m_cur_coord->move(QPoint(40, 40));
-	this->m_cur_coord->show();
-	connect(this, SIGNAL(changeCoords(int, int, int)), this->m_cur_coord, SLOT(setCoord(int, int, int)));
+	connect(m_dicom_manager, SIGNAL(changeVolume()), this, SLOT(initView()));
 }
 
-void ImageViewWidget::setVolume(vdcm::Volume* vol) {
-	this->m_volume = vol;
+void ImageViewWidget::buildLayout() {
+	QVBoxLayout *layout = new QVBoxLayout(this);
+	layout->setContentsMargins(0, 0, 0, 0);
 
-	// Set default slice
+	// Slider size
+	QSize max_size_slider(1000, 10);
+	QSize min_size_slider(100, 10);
+
+	// SliceWidget size
+	//QSize max_size_label(m_width / 2,m_height / 2);
+	QSize min_size_slice(512, 512);
+
+	m_slice_view = new SliceWidget(this);
+	m_slice_view->setMinimumSize(min_size_slice);
+
+	m_slider = new QSlider(Qt::Horizontal, this);
+	m_slider->setMaximumSize(max_size_slider);
+	m_slider->setMinimumSize(min_size_slider);
+	m_slider->setEnabled(false);
+	m_slider->setObjectName("slider");
+
+	layout->addWidget(m_slice_view, 0, Qt::AlignCenter);
+	layout->addWidget(m_slider, 0, Qt::AlignBottom);
+
+	this->setLayout(layout);
+}
+
+void ImageViewWidget::initView() {
+
+	connect(m_slider, SIGNAL(valueChanged(int)), this, SLOT(setIndex(int)));
+	connect(this, SIGNAL(changeSliceIdx(int, int, int, int)), m_dicom_manager, SLOT(setSliceIdx(int, int, int, int)));
+	connect(m_dicom_manager, SIGNAL(changeSlice(int, QImage*)), this, SLOT(draw(int, QImage*)));
+
+	m_slider->setEnabled(true);
+	m_slider->setMinimum(0);
 	switch (this->m_mode) {
 		case MODE_AXIAL:
-			this->m_idx_max = m_volume->getDepth() - 1;
+			m_slider->setMaximum(m_dicom_manager->max_axial_idx);
+			m_slider->setValue(m_dicom_manager->axial_idx);
 			break;
-
 		case MODE_CORONAL:
-			this->m_idx_max = m_volume->getHeight() - 1;
+			m_slider->setMaximum(m_dicom_manager->max_coronal_idx);
+			m_slider->setValue(m_dicom_manager->coronal_idx);
 			break;
-
 		case MODE_SAGITTAL:
-			this->m_idx_max = m_volume->getWidth() - 1;
+			m_slider->setMaximum(m_dicom_manager->max_sagittal_idx);
+			m_slider->setValue(m_dicom_manager->sagittal_idx);
 			break;
-
 		default:
 			throw std::runtime_error("Not assigned Mode");
 			return;
 	}
-	this->m_idx_slice = this->m_idx_max / 2;
+}
 
-	// Connect slider and slice_idx value
-	m_slider->setEnabled(true);
-	connect(m_slider, SIGNAL(valueChanged(int)), this, SLOT(setIndex(int)));
-
-	m_slider->setMinimum(0);
-	m_slider->setMaximum(this->m_idx_max);
-	m_slider->setValue(this->m_idx_slice);
+void ImageViewWidget::draw(int mode, QImage* img) {
+	if(mode == m_mode)
+		m_slice_view->drawSlice(img);
 }
 
 void ImageViewWidget::setSlider(QSlider* slider) {
@@ -66,106 +90,9 @@ void ImageViewWidget::setSlider(QSlider* slider) {
 void ImageViewWidget::setIndex(int idx) {
 	this->m_idx_slice = idx;
 
-	this->draw();
-}
+	//TODO::dynamic slice size
+	emit changeSliceIdx(m_mode, idx, 512, 512);
 
-void ImageViewWidget::draw() {
-
-	qDebug("drawing");
-	std::vector<uint16_t> slice;
-	int width = 0;
-	int height = 0;
-
-	switch (this->m_mode) {
-		case MODE_AXIAL:
-			slice = m_volume->getAxialSlice(m_idx_slice);
-			width = m_volume->getWidth();
-			height = m_volume->getHeight();
-			break;
-
-		case MODE_CORONAL:
-			slice = m_volume->getCoronalSlice(m_idx_slice);
-			width = m_volume->getWidth();
-			height = m_volume->getDepth();
-			break;
-
-		case MODE_SAGITTAL:
-			slice = m_volume->getSagittalSlice(m_idx_slice);
-			width = m_volume->getHeight();
-			height = m_volume->getDepth();
-			break;
-
-		default:
-			throw std::runtime_error("Not assigned Mode");
-			return;
-	}
-
-	// Clamp vector
-	/*for (int i = 0; i < slice.size(); i++) {
-		if (slice[i] > 4096) slice[i] = 4096;
-		//else if (min > slice[i]) min = slice[i];
-	}*/
-	// Normalize
-	/*int16_t max = 4096;
-	int16_t min = 0;
-	for (int i = 0; i < slice.size(); i++) {
-		int16_t val = (int16_t)slice[i];
-		if (max < val) slice[i] = max;
-		if (min > val) slice[i] = min;
-	}*/
-
-	/*uint16_t max = 0;
-	uint16_t min = UINT16_MAX;
-	for (int i = 0; i < slice.size(); i++) {
-		uint16_t val = (uint16_t)slice[i];
-		if (max < val) max = val;
-		if (min > val) min = val;
-	}
-
-	printf("max min:%d %d\n", max, min);
-
-	for (int i = 0; i < slice.size(); i++) {
-		uint16_t val = (uint16_t)slice[i];
-		slice[i] = (uint16_t)round((val-min) / (double)(max - min) * UINT16_MAX);
-	}
-
-	/*const QByteArray byteArray = QByteArray::fromRawData(
-		reinterpret_cast<const char*>(slice.data()),
-		sizeof(uint16_t)*slice.size());
-
-	printf("ba:%d", byteArray.size());*/
-
-	QImage img(width,height,QImage::Format_RGBA64);
-	//img = QImage::fromData(byteArray);
-
-	for (int i = 0; i < height; i++) {
-		for (int j = 0; j < width; j++) {
-			QRgb val = qRgb(slice[i * width + j], slice[i * width + j], slice[i * width + j]);
-			img.setPixel(j, i, val);
-		}
-	}
-
-	this->setAlignment(Qt::AlignCenter);
-	this->setPixmap(QPixmap::fromImage(img, Qt::AutoColor));
-
-
-
-	/*QPixmap pixmap;
-	pixmap.loadFromData(byteArray,flags=Qt::);
-
-	printf("pix:%d\n", pixmap.size());
-
-	pixmap = pixmap.scaled(this->size(), Qt::KeepAspectRatio);
-	this->setPixmap(pixmap);*/
-	//this->show();
-}
-#include <QDebug>
-void ImageViewWidget::mouseMoveEvent(QMouseEvent *e) {
-	qDebug() << e->pos();
-	qDebug() << e->x() << e->y();
-	int x = e->x();
-	int y = e->y();
-	int z = 0;
-
-	emit changeCoords(x, y, z);
+	//this->getSlice();
+	//m_dicom_manager->getSlice(m_mode);
 }

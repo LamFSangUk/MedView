@@ -1,46 +1,49 @@
 #ifndef __IMAGE_VIEW_WIDGET__
 #define __IMAGE_VIEW_WIDGET__
 
-#include <QLabel>
+#include <QWidget>
 #include <QSlider>
 #include <QTextEdit>
 
 #include "volume.h"
-#include "CursorCoordinator.h"
+#include "SliceWidget.h"
+#include "DicomManager.h"
 
 #define MODE_AXIAL 0
 #define MODE_SAGITTAL 1
 #define MODE_CORONAL 2
 
-class ImageViewWidget : public QLabel
+class ImageViewWidget : public QWidget
 {
 	Q_OBJECT
 public:
-	ImageViewWidget(int);
+	ImageViewWidget(int, DicomManager*, QWidget*);
 
-	void setVolume(vdcm::Volume*);
+	//void setVolume(vdcm::Volume*);
 
 	void setSlider(QSlider*);
 
-	void mouseMoveEvent(QMouseEvent *e) override;
-
 signals:
-	void changeCoords(int, int, int);
-
+	void changeSlice(QImage*);
+	void changeSliceIdx(int, int, int, int);
 private slots:
 	void setIndex(int);
+	void initView();
+	void draw(int, QImage*);
 
 private:
 	int m_mode;
 
 	int m_idx_slice;
 	int m_idx_max;
-	vdcm::Volume* m_volume;
+	//vdcm::Volume* m_volume;
+	DicomManager *m_dicom_manager;
 	
+	SliceWidget* m_slice_view;
 	QSlider* m_slider;
-	CursorCoordinator* m_cur_coord;
 
-	void draw();
+	void buildLayout();
+	void getSlice();
 };
 
 #endif // __IMAGE_VIEW_WIDGET__

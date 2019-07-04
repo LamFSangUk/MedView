@@ -104,6 +104,77 @@ namespace vdcm {
 		return slice;
 	}
 
+	Slice Volume::getSlice(int mode, Axes* axes) {
+		Slice s(600, 600);
+
+		//get axes max coordinates
+		int max_width = 0;
+		int max_height = 0;
+		//TODO:: modify max from axes
+		switch (mode) {
+			case MODE_AXIAL:
+				max_width = m_width;
+				max_height = m_height;
+				break;
+			case MODE_CORONAL:
+				max_width = m_height;
+				max_height = m_depth;
+				break;
+			case MODE_SAGITTAL:
+				max_width = m_width;
+				max_height = m_depth;
+				break;
+			default:
+				break;
+		}
+		// Resize
+		s.refResize(max_width, max_height);
+
+		// Transformation
+		s.refTransform(mode, axes->getCenter(), axes->getYaw(), axes->getRoll(), axes->getPitch());
+
+		// Interpolate
+		for (int i = 0; i < s.getHeight(); i++) {
+			for (int j = 0; j < s.getWidth(); j++) {
+				Eigen::Vector4d pos = s.getVoxelCoord(j, i);
+				int intensity = 0;
+
+				int x_0 = (int)pos(0);
+				int y_0 = (int)pos(1);
+				int z_0 = (int)pos(2);
+				int x_1 = (int)(pos(0) + 1);
+				int y_1 = (int)(pos(1) + 1);
+				int z_1 = (int)(pos(2) + 1);
+
+				// Check max and min boundary
+				if (x_0 < 0 || y_0 < 0 || z_0 < 0 || x_1 >= m_width || y_1 >= m_height || z_1 >= m_depth) {
+					s.setVoxelIntensity(j, i, 0);
+					continue;
+				}
+
+				double x_d = pos(0) - x_0;
+				double y_d = pos(1) - y_0;
+				double z_d = pos(2) - z_0;
+
+				double c_00 = m_volume_data[z_0][y_0*m_width + x_0] * (1 - x_d) + m_volume_data[z_0][y_0*m_width + x_1] * x_d;
+				double c_01 = m_volume_data[z_1][y_0*m_width + x_0] * (1 - x_d) + m_volume_data[z_1][y_0*m_width + x_1] * x_d;
+				double c_10 = m_volume_data[z_0][y_1*m_width + x_0] * (1 - x_d) + m_volume_data[z_0][y_1*m_width + x_1] * x_d;
+				double c_11 = m_volume_data[z_1][y_1*m_width + x_0] * (1 - x_d) + m_volume_data[z_1][y_1*m_width + x_1] * x_d;
+
+				double c_0 = c_00 * (1 - y_d) + c_10 * y_d;
+				double c_1 = c_01 * (1 - y_d) + c_11 * y_d;
+
+				double c = c_0 * (1 - z_d) + c_1 * z_d;
+
+				intensity = (int)(c + 0.5);
+
+				s.setVoxelIntensity(j, i, intensity);
+			}
+		}
+
+		return s;
+	}
+
 	int Volume::getWidth() {
 		return m_width;
 	}

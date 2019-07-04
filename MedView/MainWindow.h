@@ -6,12 +6,16 @@
 #include <QSlider>
 
 #include "ImageViewWidget.h"
+#include "DicomManager.h"
 
 class MainWindow : public QMainWindow
 {
 	Q_OBJECT
 public:
 	MainWindow();
+
+signals:
+	//void changeVolumeData(vdcm::Volume* vol);
 
 private slots:
 	void open();
@@ -22,7 +26,7 @@ private:
 	void createMenuBar();
 
 	const int m_height = 1080;
-	const int m_width = 1280;
+	const int m_width = 1080;
 
 	ImageViewWidget *m_axial_view;
 	ImageViewWidget *m_coronal_view;
@@ -30,6 +34,8 @@ private:
 	QSlider *m_axial_slider;
 	QSlider *m_coronal_slider;
 	QSlider *m_sagital_slider;
+
+	DicomManager *m_dicom_manager;
 };
 
 #endif //__MAIN_WINDOW__

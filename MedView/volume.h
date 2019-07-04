@@ -2,6 +2,9 @@
 #define __VOLUME_H__
 
 #include <vector>
+#include "global.h"
+#include "slice.h"
+#include "axes.h"
 
 namespace vdcm {
 	class Volume
@@ -14,6 +17,7 @@ namespace vdcm {
 		std::vector<uint16_t> getAxialSlice(int);
 		std::vector<uint16_t> getCoronalSlice(int);
 		std::vector<uint16_t> getSagittalSlice(int);
+		Slice getSlice(int, Axes*);
 
 		int getWidth();
 		int getHeight();

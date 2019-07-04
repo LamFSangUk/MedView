@@ -1,7 +1,6 @@
 #ifndef __CURSOR_COORDINATOR_H__
 #define __CURSOR_COORDINATOR_H__
 
-#include <QObject>
 #include <QTextEdit>
 
 #include <string>
