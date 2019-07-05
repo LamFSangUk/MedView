@@ -14,7 +14,7 @@ public:
 	void drawSlice(QImage*);
 	void drawAxes(QPainter*);
 
-	void setLines(QLine, QLine);
+	void setLines(QLine, QLine, QColor, QColor);
 signals:
 	void changeCoords(int, int, int);
 private:
@@ -23,6 +23,8 @@ private:
 
 	QLine m_line_horizontal;
 	QLine m_line_vertical;
+	QColor m_color_line_horizontal;
+	QColor m_color_line_vertical;
 };
 
 #endif //__SLICE_WIDGET_H__

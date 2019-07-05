@@ -103,5 +103,19 @@ void ImageViewWidget::setIndex(int idx) {
 
 void ImageViewWidget::setLines() {
 	std::vector<QLine> lines = this->m_dicom_manager->getAxesLines(m_mode, 512, 512);
-	this->m_slice_view->setLines(lines[0], lines[1]);
+
+	switch (this->m_mode) {
+		case MODE_AXIAL:
+			this->m_slice_view->setLines(lines[0], lines[1], QColor(Qt::blue), QColor(Qt::green));
+			break;
+		case MODE_CORONAL:
+			this->m_slice_view->setLines(lines[0], lines[1], QColor(Qt::red), QColor(Qt::blue));
+			break;
+		case MODE_SAGITTAL:
+			this->m_slice_view->setLines(lines[0], lines[1], QColor(Qt::red), QColor(Qt::green));
+			break;
+		default:
+			return;
+	}
+
 }

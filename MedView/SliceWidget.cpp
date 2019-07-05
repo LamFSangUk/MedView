@@ -24,9 +24,13 @@ SliceWidget::SliceWidget(QWidget* parent=NULL)
 	connect(this, SIGNAL(changeCoords(int, int, int)), this->m_cur_coord, SLOT(setCoord(int, int, int)));
 }
 
-void SliceWidget::setLines(QLine lh, QLine lv) {
+void SliceWidget::setLines(QLine lh, QLine lv, QColor ch, QColor cv) {
 	m_line_horizontal = lh;
 	m_line_vertical = lv;
+
+	// Set line color
+	m_color_line_horizontal = ch;
+	m_color_line_vertical = cv;
 }
 
 /*void SliceWidget::drawSlice() {
@@ -52,34 +56,24 @@ void SliceWidget::drawSlice(QImage* img){
 	qDebug("there");
 	QPainter painter(pixmap);
 
-	drawAxes(&painter);
-	//drawAxes(&painter);
-	//QPen pen(Qt::red);
-
-	//pen.setWidth(4);
-	//painter.setPen(pen);
-
-
-	//painter.drawLine(m_line_horizontal);
-	//qDebug() << this->m_line_horizontal;
-	//painter.drawLine(m_line_vertical);
-	//qDebug() << this->m_line_vertical;
+	this->drawAxes(&painter);
 
 	
 	this->setAlignment(Qt::AlignCenter);
 	this->setPixmap(*pixmap);
-
-	//drawAxes(QPoint(0, 256), QPoint(512, 256), QPoint(125,125),QPoint(125,125));
 }
 
 void SliceWidget::drawAxes(QPainter *painter) {
-	QPen pen(Qt::red);
-
+	QPen pen;
 	pen.setWidth(3);
-	painter->setPen(pen);
 
+	pen.setColor(m_color_line_horizontal);
+	painter->setPen(pen);
 	painter->drawLine(m_line_horizontal);
 	qDebug() << this->m_line_horizontal;
+
+	pen.setColor(m_color_line_vertical);
+	painter->setPen(pen);
 	painter->drawLine(m_line_vertical);
 	qDebug() << this->m_line_vertical;
 }
