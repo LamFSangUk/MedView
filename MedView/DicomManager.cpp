@@ -18,9 +18,9 @@ void DicomManager::readDicom(const char* filename) {
 	double center_z = (double)(m_volume->getDepth()) / 2;
 	this->m_axes = new vdcm::Axes(center_x, center_y, center_z);
 
-	max_axial_idx = m_volume->getDepth() - 1;
-	max_coronal_idx = m_volume->getHeight() - 1;
-	max_sagittal_idx = m_volume->getWidth() - 1;
+	max_axial_idx = m_volume->getDepth() - 2;
+	max_coronal_idx = m_volume->getHeight() - 2;
+	max_sagittal_idx = m_volume->getWidth() - 2;
 
 	axial_idx = (int)(center_z + 0.5);
 	coronal_idx = (int)(center_y + 0.5);
@@ -73,6 +73,83 @@ void DicomManager::setSliceIdx(int mode, int idx, int width, int height) {
 			break;
 	}
 	m_axes->setCenter(c(0),c(1),c(2));
-	extractSlice(mode, width, height);
+	emit changeAxes();
 
+	extractSlice(mode, width, height);
+}
+
+std::vector<QLine> DicomManager::getAxesLines(int mode, int width, int height) {
+	Eigen::Vector4d c = m_axes->getCenter();
+	Eigen::Vector4d end_point;
+	Eigen::Vector3d dir_axial = m_axes->getAxis(MODE_AXIAL);
+	Eigen::Vector3d dir_coronal = m_axes->getAxis(MODE_CORONAL);
+	Eigen::Vector3d dir_sagittal = m_axes->getAxis(MODE_SAGITTAL);
+
+	Eigen::Vector4d rdir;
+
+	QLine lh;
+	QLine lv;
+
+	double width_rate, height_rate;
+	switch (mode) {
+		case MODE_AXIAL:
+			width_rate = (double)width / m_volume->getWidth();
+			height_rate = (double)height / m_volume->getHeight();
+
+			rdir << dir_coronal(0), dir_coronal(1), dir_coronal(2), 1;
+			end_point = c - (coronal_idx * rdir);
+			lh.setP1(QPoint((int)(end_point(0)*width_rate + 0.5), (int)(c(1)*height_rate + 0.5)));
+			end_point = c + ((max_coronal_idx-coronal_idx) * rdir);
+			lh.setP2(QPoint((int)(end_point(0)*width_rate + 0.5), (int)(c(1)*height_rate + 0.5)));
+
+			rdir << dir_sagittal(0), dir_sagittal(1), dir_sagittal(2), 1;
+			end_point = c - (sagittal_idx * rdir);
+			lv.setP1(QPoint((int)(c(0)*width_rate + 0.5), (int)(end_point(1)*height_rate + 0.5)));
+			end_point = c + ((max_sagittal_idx-sagittal_idx) * rdir);
+			lv.setP2(QPoint((int)(c(0)*width_rate + 0.5), (int)(end_point(1)*height_rate + 0.5)));
+
+			break;
+		case MODE_CORONAL:
+			width_rate = (double)width / m_volume->getHeight();
+			height_rate = (double)height / m_volume->getDepth();
+
+			rdir << dir_sagittal(0), dir_sagittal(1), dir_sagittal(2), 1;
+			end_point = c - (sagittal_idx * rdir);
+			lh.setP1(QPoint((int)(end_point(1)*width_rate + 0.5), (int)(c(2)*height_rate + 0.5)));
+			end_point = c + ((max_sagittal_idx - sagittal_idx) * rdir);
+			lh.setP2(QPoint((int)(end_point(1)*width_rate + 0.5), (int)(c(2)*height_rate + 0.5)));
+
+			rdir << dir_axial(0), dir_axial(1), dir_axial(2), 1;
+			end_point = c - (axial_idx * rdir);
+			lv.setP1(QPoint((int)(c(1)*width_rate + 0.5), (int)(end_point(2)*height_rate + 0.5)));
+			end_point = c + ((max_axial_idx - axial_idx) * rdir);
+			lv.setP2(QPoint((int)(c(1)*width_rate + 0.5), (int)(end_point(2)*height_rate + 0.5)));
+
+			break;
+		case MODE_SAGITTAL:
+			width_rate = (double)width / m_volume->getWidth();
+			height_rate = (double)height / m_volume->getDepth();
+
+			rdir << dir_coronal(0), dir_coronal(1), dir_coronal(2), 1;
+			end_point = c - (coronal_idx * rdir);
+			lh.setP1(QPoint((int)(end_point(0)*width_rate + 0.5), (int)(c(2)*height_rate + 0.5)));
+			end_point = c + ((max_coronal_idx - coronal_idx) * rdir);
+			lh.setP2(QPoint((int)(end_point(0)*width_rate + 0.5), (int)(c(2)*height_rate + 0.5)));
+
+			rdir << dir_axial(0), dir_axial(1), dir_axial(2), 1;
+			end_point = c - (axial_idx * rdir);
+			lv.setP1(QPoint((int)(c(0)*width_rate + 0.5), (int)(end_point(2)*height_rate + 0.5)));
+			end_point = c + ((max_axial_idx - axial_idx) * rdir);
+			lv.setP2(QPoint((int)(c(0)*width_rate + 0.5), (int)(end_point(2)*height_rate + 0.5)));
+
+			break;
+		default:
+			break;
+	}
+
+	std::vector<QLine> res;
+	res.push_back(lh);
+	res.push_back(lv);
+
+	return res;
 }

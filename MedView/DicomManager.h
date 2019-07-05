@@ -27,9 +27,12 @@ public:
 	Slice* coronal_slice;
 	Slice* sagittal_slice;
 
+	std::vector<QLine> getAxesLines(int, int, int);
+
 signals:
 	void changeVolume();
 	void changeSlice(int, QImage*);
+	void changeAxes();
 private slots:
 	void setSliceIdx(int, int, int, int);
 private:

@@ -56,6 +56,7 @@ void ImageViewWidget::initView() {
 	connect(m_slider, SIGNAL(valueChanged(int)), this, SLOT(setIndex(int)));
 	connect(this, SIGNAL(changeSliceIdx(int, int, int, int)), m_dicom_manager, SLOT(setSliceIdx(int, int, int, int)));
 	connect(m_dicom_manager, SIGNAL(changeSlice(int, QImage*)), this, SLOT(draw(int, QImage*)));
+	connect(m_dicom_manager, SIGNAL(changeAxes()), this, SLOT(setLines()));
 
 	m_slider->setEnabled(true);
 	m_slider->setMinimum(0);
@@ -79,8 +80,11 @@ void ImageViewWidget::initView() {
 }
 
 void ImageViewWidget::draw(int mode, QImage* img) {
-	if(mode == m_mode)
+	qDebug() << mode << m_mode;
+	if (mode == m_mode)
 		m_slice_view->drawSlice(img);
+	else
+		m_slice_view->drawSlice(nullptr);
 }
 
 void ImageViewWidget::setSlider(QSlider* slider) {
@@ -95,4 +99,9 @@ void ImageViewWidget::setIndex(int idx) {
 
 	//this->getSlice();
 	//m_dicom_manager->getSlice(m_mode);
+}
+
+void ImageViewWidget::setLines() {
+	std::vector<QLine> lines = this->m_dicom_manager->getAxesLines(m_mode, 512, 512);
+	this->m_slice_view->setLines(lines[0], lines[1]);
 }

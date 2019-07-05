@@ -12,13 +12,17 @@ public:
 	SliceWidget(QWidget*);
 	void mouseMoveEvent(QMouseEvent *e) override;
 	void drawSlice(QImage*);
+	void drawAxes(QPainter*);
 
+	void setLines(QLine, QLine);
 signals:
 	void changeCoords(int, int, int);
 private:
-	QImage* m_slice;
+	QImage m_slice;
 	CursorCoordinator* m_cur_coord;
 
+	QLine m_line_horizontal;
+	QLine m_line_vertical;
 };
 
 #endif //__SLICE_WIDGET_H__

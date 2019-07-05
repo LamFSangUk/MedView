@@ -24,12 +24,12 @@ public:
 	void setSlider(QSlider*);
 
 signals:
-	void changeSlice(QImage*);
-	void changeSliceIdx(int, int, int, int);
+	void changeSliceIdx(int,int,int,int);
 private slots:
 	void setIndex(int);
 	void initView();
 	void draw(int, QImage*);
+	void setLines();
 
 private:
 	int m_mode;
