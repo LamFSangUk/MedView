@@ -11,11 +11,13 @@ Slice::Slice() {
 Slice::Slice(int width, int height) {
 	this->m_width = width;
 	this->m_height = height;
+	this->m_ref_width = width;
+	this->m_ref_height = height;
 
 	for (int i = 0; i < m_height; i++) {
 		std::vector<Voxel> v;
 		for (int j = 0; j < m_width; j++) {
-			Voxel voxel((double)j, (double)i ,0.0, 0);
+			Voxel voxel((double)j, (double)i, 0.0, 0);
 			v.push_back(voxel);
 		}
 		m_slice.push_back(v);
@@ -209,23 +211,4 @@ void Slice::refResize(int width, int height) {
 		}
 	}
 
-}
-
-int Slice::getWidth() {
-	return m_width;
-}
-int Slice::getHeight() {
-	return m_height;
-}
-
-Eigen::Vector4d Slice::getVoxelCoord(int x,int y) {
-	return m_slice[y][x].getCoord();
-}
-
-void Slice::setVoxelIntensity(int x, int y, int intensity) {
-	m_slice[y][x].setIntensity(intensity);
-}
-
-int Slice::getVoxelIntensity(int x, int y) {
-	return m_slice[y][x].getIntensity();
 }

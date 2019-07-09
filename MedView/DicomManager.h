@@ -15,6 +15,8 @@ public:
 	DicomManager(QObject*);
 	void readDicom(const char*);
 	void extractSlice(int, int, int);
+	std::vector<int> getVoxelInfo(int, int, int);
+	inline QSize getStandardSliceSize();
 
 	int axial_idx;
 	int coronal_idx;
@@ -40,6 +42,12 @@ private:
 
 	vdcm::Volume* m_volume;
 	vdcm::Axes* m_axes;
+
+	const QSize m_standard_slice_size = QSize(600, 600);
 };
+
+inline QSize  DicomManager::getStandardSliceSize() {
+	return m_standard_slice_size;
+}
 
 #endif // __DICOM_MANAGER_H__

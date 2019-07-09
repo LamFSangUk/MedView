@@ -22,6 +22,7 @@ public:
 	//void setVolume(vdcm::Volume*);
 
 	void setSlider(QSlider*);
+	std::vector<int> getPixelInfo(int, int);		// Trnaslate label pixel to voxel information
 
 signals:
 	void changeSliceIdx(int,int,int,int);
@@ -30,6 +31,9 @@ private slots:
 	void initView();
 	void draw(int, QImage*);
 	void setLines();
+
+	void increaseIndex();
+	void decreaseIndex();
 
 private:
 	int m_mode;

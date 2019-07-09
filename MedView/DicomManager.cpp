@@ -31,12 +31,28 @@ void DicomManager::readDicom(const char* filename) {
 
 void DicomManager::extractSlice(int mode, int width, int height) {
 	
-	Slice s = m_volume->getSlice(mode, m_axes);
+	Slice* s = m_volume->getSlice(mode, m_axes);
+	switch (mode) {
+		case MODE_AXIAL:
+			axial_slice = s;
+			break;
+		case MODE_CORONAL:
+			coronal_slice = s;
+			break;
+		case MODE_SAGITTAL:
+			sagittal_slice = s;
+			break;
+		default:
+			break;
+	}
 
-	QImage slice(600, 600, QImage::Format_RGBA64);
-	for (int i = 0; i < 600; i++) {
-		for (int j = 0; j < 600; j++) {
-			QRgb val = qRgb(s.getVoxelIntensity(j, i), s.getVoxelIntensity(j, i), s.getVoxelIntensity(j, i));
+	QImage slice(m_standard_slice_size, QImage::Format_Grayscale8);
+	for (int i = 0; i < m_standard_slice_size.height(); i++) {
+		for (int j = 0; j < m_standard_slice_size.width(); j++) {
+			double org_val = (double)s->getVoxelIntensity(j, i) / 256;
+			if (org_val < 0) org_val = 0;
+			QRgb val = qRgb((int)(org_val+0.5), (int)(org_val + 0.5), (int)(org_val+0.5));
+			//slice.setPixelColor(j, i, (uint)(org_val + 0.5));
 			slice.setPixel(j, i, val);
 		}
 	}
@@ -44,6 +60,49 @@ void DicomManager::extractSlice(int mode, int width, int height) {
 
 	emit changeSlice(mode, &r_slice);
 
+}
+
+/**
+ * Get voxel information including real coordinate and intensity using coordinate of slice.
+ *
+ * @param int mode : Mode for viewing slice(Axial, Coronal, Sagittal)
+ * @param int slice_x : x coordinate of slice
+ * @param int slice_y : y coordinate of slice
+ * @return vector<int> : coordinate(x,y,z) and intensity of the voxel
+ */
+std::vector<int> DicomManager::getVoxelInfo(int mode, int slice_x, int slice_y) {
+	Eigen::Vector4d position;
+	int intensity;
+
+	if (slice_x < 0) slice_x = 0;
+	else if (slice_x >= m_standard_slice_size.width()) slice_x = m_standard_slice_size.width();
+	if (slice_y < 0) slice_y = 0;
+	else if (slice_y >= m_standard_slice_size.height()) slice_y = m_standard_slice_size.height();
+
+	switch (mode) {
+		case MODE_AXIAL:
+			position = axial_slice->getVoxelCoord(slice_x, slice_y);
+			intensity = axial_slice->getVoxelIntensity(slice_x, slice_y);
+			break;
+		case MODE_CORONAL:
+			position = coronal_slice->getVoxelCoord(slice_x, slice_y);
+			intensity = coronal_slice->getVoxelIntensity(slice_x, slice_y);
+			break;
+		case MODE_SAGITTAL:
+			position = sagittal_slice->getVoxelCoord(slice_x, slice_y);
+			intensity = sagittal_slice->getVoxelIntensity(slice_x, slice_y);
+			break;
+		default:
+			break;
+	}
+
+	std::vector<int> voxel_info(4);
+	voxel_info[0] = position(0);
+	voxel_info[1] = position(1);
+	voxel_info[2] = position(2);
+	voxel_info[3] = intensity;
+
+	return voxel_info;
 }
 
 void DicomManager::setSliceIdx(int mode, int idx, int width, int height) {

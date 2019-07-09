@@ -28,4 +28,23 @@ private:
 	std::vector<std::vector<Voxel > > m_slice;
 };
 
+inline int Slice::getWidth() {
+	return m_width;
+}
+inline int Slice::getHeight() {
+	return m_height;
+}
+
+inline Eigen::Vector4d Slice::getVoxelCoord(int x, int y) {
+	return m_slice[y][x].getCoord();
+}
+
+inline void Slice::setVoxelIntensity(int x, int y, int intensity) {
+	m_slice[y][x].setIntensity(intensity);
+}
+
+inline int Slice::getVoxelIntensity(int x, int y) {
+	return m_slice[y][x].getIntensity();
+}
+
 #endif // __SLICE_H__

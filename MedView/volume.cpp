@@ -56,7 +56,9 @@ namespace vdcm {
 			image.GetBuffer(temp_buffer);
 
 			for (int i = 0; i < length; i+=2) {
-				uint16_t val = temp_buffer[i] | (uint16_t)temp_buffer[i+1] << 8;
+				uint16_t val = temp_buffer[i + 1];
+				val <<= 8;
+				val |= (uint16_t)temp_buffer[i];
 				buffer[i/2] = val;
 			}
 			
@@ -104,8 +106,8 @@ namespace vdcm {
 		return slice;
 	}
 
-	Slice Volume::getSlice(int mode, Axes* axes) {
-		Slice s(600, 600);
+	Slice* Volume::getSlice(int mode, Axes* axes) {
+		Slice* s = new Slice(600, 600);
 
 		//get axes max coordinates
 		int max_width = 0;
@@ -128,15 +130,15 @@ namespace vdcm {
 				break;
 		}
 		// Resize
-		s.refResize(max_width, max_height);
+		s->refResize(max_width, max_height);
 
 		// Transformation
-		s.refTransform(mode, axes->getCenter(), axes->getYaw(), axes->getRoll(), axes->getPitch());
+		s->refTransform(mode, axes->getCenter(), axes->getYaw(), axes->getRoll(), axes->getPitch());
 
 		// Interpolate
-		for (int i = 0; i < s.getHeight(); i++) {
-			for (int j = 0; j < s.getWidth(); j++) {
-				Eigen::Vector4d pos = s.getVoxelCoord(j, i);
+		for (int i = 0; i < s->getHeight(); i++) {
+			for (int j = 0; j < s->getWidth(); j++) {
+				Eigen::Vector4d pos = s->getVoxelCoord(j, i);
 				int intensity = 0;
 
 				int x_0 = (int)pos(0);
@@ -148,7 +150,7 @@ namespace vdcm {
 
 				// Check max and min boundary
 				if (x_0 < 0 || y_0 < 0 || z_0 < 0 || x_1 >= m_width || y_1 >= m_height || z_1 >= m_depth) {
-					s.setVoxelIntensity(j, i, 0);
+					s->setVoxelIntensity(j, i, 0);
 					continue;
 				}
 
@@ -168,7 +170,7 @@ namespace vdcm {
 
 				intensity = (int)(c + 0.5);
 
-				s.setVoxelIntensity(j, i, intensity);
+				s->setVoxelIntensity(j, i, intensity);
 			}
 		}
 

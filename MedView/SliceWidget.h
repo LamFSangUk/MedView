@@ -10,14 +10,25 @@ class SliceWidget : public QLabel {
 	Q_OBJECT
 public:
 	SliceWidget(QWidget*);
-	void mouseMoveEvent(QMouseEvent *e) override;
+
+	void mouseMoveEvent(QMouseEvent *) override;
+	void wheelEvent(QWheelEvent *) override;
+	void resizeEvent(QResizeEvent *) override;
+	void enterEvent(QEvent *) override;
+	void leaveEvent(QEvent *) override;
+
 	void drawSlice(QImage*);
 	void drawAxes(QPainter*);
 
 	void setLines(QLine, QLine, QColor, QColor);
 signals:
-	void changeCoords(int, int, int);
+	void changeCoords(int, int, int, int);
+	void requestIncIndex();
+	void requestDecIndex();
 private:
+	bool m_is_slice_loaded;
+	bool m_is_cursor_on;
+
 	QImage m_slice;
 	CursorCoordinator* m_cur_coord;
 
@@ -25,6 +36,8 @@ private:
 	QLine m_line_vertical;
 	QColor m_color_line_horizontal;
 	QColor m_color_line_vertical;
+
+	QSize m_size;
 };
 
 #endif //__SLICE_WIDGET_H__

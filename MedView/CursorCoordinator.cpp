@@ -13,22 +13,23 @@ CursorCoordinator::CursorCoordinator(QWidget* parent)
 	this->setFrameStyle(QFrame::NoFrame);
 
 	this->setFixedSize(QSize(200, 30));
-
-	this->setCoord(0, 0, 0);
 }
 
-void CursorCoordinator::setCoord(int x, int y, int z) {
+void CursorCoordinator::setCoord(int x, int y, int z, int intensity) {
 	this->x = x;
 	this->y = y;
 	this->z = z;
+	this->intensity = intensity;
 
 	this->setText(makeCoordString().c_str());
+	this->show();
 }
 
 std::string CursorCoordinator::makeCoordString() {
 	std::string str = "(x:" + std::to_string(this->x)
 		+ " y:" + std::to_string(this->y)
-		+ " z:" + std::to_string(this->z) + ")";
+		+ " z:" + std::to_string(this->z) + "): "
+		+ std::to_string(this->intensity);
 
 	return str;
 }

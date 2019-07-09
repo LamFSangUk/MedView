@@ -17,7 +17,7 @@ namespace vdcm {
 		std::vector<uint16_t> getAxialSlice(int);
 		std::vector<uint16_t> getCoronalSlice(int);
 		std::vector<uint16_t> getSagittalSlice(int);
-		Slice getSlice(int, Axes*);
+		Slice* getSlice(int, Axes*);
 
 		int getWidth();
 		int getHeight();

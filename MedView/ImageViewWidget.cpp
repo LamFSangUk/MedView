@@ -58,6 +58,9 @@ void ImageViewWidget::initView() {
 	connect(m_dicom_manager, SIGNAL(changeSlice(int, QImage*)), this, SLOT(draw(int, QImage*)));
 	connect(m_dicom_manager, SIGNAL(changeAxes()), this, SLOT(setLines()));
 
+	connect(m_slice_view, SIGNAL(requestIncIndex()), this, SLOT(increaseIndex()));
+	connect(m_slice_view, SIGNAL(requestDecIndex()), this, SLOT(decreaseIndex()));
+
 	m_slider->setEnabled(true);
 	m_slider->setMinimum(0);
 	switch (this->m_mode) {
@@ -91,6 +94,22 @@ void ImageViewWidget::setSlider(QSlider* slider) {
 	this->m_slider = slider;
 }
 
+/**
+ * Get voxel information from 2D slice about specific axes
+ *
+ * @param int x : point coordinate x on label
+ * @param int y : point coordinate y on label
+ * @param int label_size : label frame size
+ */
+std::vector<int> ImageViewWidget::getPixelInfo(int x, int y) {
+	QSize real_size = m_dicom_manager->getStandardSliceSize();
+
+	int r_x = (int)(x * (float)real_size.width() / m_slice_view->size().width());
+	int r_y = (int)(y * (float)real_size.height() / m_slice_view->size().height());
+
+	return m_dicom_manager->getVoxelInfo(m_mode, r_x, r_y);
+}
+
 void ImageViewWidget::setIndex(int idx) {
 	this->m_idx_slice = idx;
 
@@ -100,6 +119,7 @@ void ImageViewWidget::setIndex(int idx) {
 	//this->getSlice();
 	//m_dicom_manager->getSlice(m_mode);
 }
+
 
 void ImageViewWidget::setLines() {
 	std::vector<QLine> lines = this->m_dicom_manager->getAxesLines(m_mode, 512, 512);
@@ -118,4 +138,11 @@ void ImageViewWidget::setLines() {
 			return;
 	}
 
+}
+
+void ImageViewWidget::increaseIndex() {
+	m_slider->setValue(m_slider->value() + 1);
+}
+void ImageViewWidget::decreaseIndex() {
+	m_slider->setValue(m_slider->value() - 1);
 }

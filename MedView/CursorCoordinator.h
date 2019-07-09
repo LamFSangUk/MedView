@@ -12,11 +12,12 @@ public:
 	CursorCoordinator(QWidget*);
 
 private slots:
-	void setCoord(int, int, int);
+	void setCoord(int, int, int, int);
 
 private:
 	int loc_x, loc_y;	// Location of this components on parent's area
 	int x, y, z;		// Values for showing cursor coordinate
+	int intensity;
 
 	std::string makeCoordString();
 };

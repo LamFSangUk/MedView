@@ -72,7 +72,7 @@ void MainWindow::createMenuBar() {
 }
 
 void MainWindow::open() {
-	QString str_dicom_folder = QFileDialog::getExistingDirectory(this, "Open DICOM folder", QDir::homePath(), QFileDialog::ShowDirsOnly);
+	QString str_dicom_folder = QFileDialog::getExistingDirectory(this, "Open DICOM folder", QDir::currentPath(), QFileDialog::ShowDirsOnly);
 
 	if (!str_dicom_folder.isEmpty() && !str_dicom_folder.isNull()) { // Prevent cancelation
 
