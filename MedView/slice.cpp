@@ -137,31 +137,38 @@ void Slice::refTransform(int mode, Eigen::Vector4d axes_center, double degree_ya
 	// 3.
 
 	// Rotate about z-axis
-	transform.setIdentity();
-	cos_v = std::cos(degree_yaw * M_PI / 180);
-	sin_v = std::sin(degree_yaw * M_PI / 180);
-	transform(0, 0) = transform(1, 1) = cos_v;
-	transform(0, 1) = -sin_v;
-	transform(1, 0) = sin_v;
-	mat = transform * mat;
+	if (mode != MODE_AXIAL) {
+		transform.setIdentity();
+		cos_v = std::cos(degree_yaw * M_PI / 180);
+		sin_v = std::sin(degree_yaw * M_PI / 180);
+		transform(0, 0) = transform(1, 1) = cos_v;
+		transform(0, 1) = -sin_v;
+		transform(1, 0) = sin_v;
+		mat = transform * mat;
+	}
+	
 
 	// Rotate about y-axis
-	transform.setIdentity();
-	cos_v = std::cos(degree_roll * M_PI / 180);
-	sin_v = std::sin(degree_roll * M_PI / 180);
-	transform(0, 0) = transform(2, 2) = cos_v;
-	transform(0, 2) = -sin_v;
-	transform(2, 0) = sin_v;
-	mat = transform * mat;
+	if (mode != MODE_SAGITTAL) {
+		transform.setIdentity();
+		cos_v = std::cos(degree_roll * M_PI / 180);
+		sin_v = std::sin(degree_roll * M_PI / 180);
+		transform(0, 0) = transform(2, 2) = cos_v;
+		transform(0, 2) = -sin_v;
+		transform(2, 0) = sin_v;
+		mat = transform * mat;
+	}
 
 	// Rotate about x-axis
-	transform.setIdentity();
-	cos_v = std::cos(degree_pitch * M_PI / 180);
-	sin_v = std::sin(degree_pitch * M_PI / 180);
-	transform(1, 1) = transform(2, 2) = cos_v;
-	transform(1, 2) = -sin_v;
-	transform(2, 1) = sin_v;
-	mat = transform * mat;
+	if (mode != MODE_CORONAL) {
+		transform.setIdentity();
+		cos_v = std::cos(degree_pitch * M_PI / 180);
+		sin_v = std::sin(degree_pitch * M_PI / 180);
+		transform(1, 1) = transform(2, 2) = cos_v;
+		transform(1, 2) = -sin_v;
+		transform(2, 1) = sin_v;
+		mat = transform * mat;
+	}
 
 	//4.
 	transform.setIdentity();

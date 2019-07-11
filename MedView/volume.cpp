@@ -40,29 +40,36 @@ namespace vdcm {
 				const gdcm::File &f = reader.GetFile();
 				const gdcm::DataSet &ds = f.GetDataSet();
 
+				// row, col
 				gdcm::Attribute<0x0028, 0x0010> at_rows;
 				gdcm::Attribute<0x0028, 0x0011> at_cols;
 				at_rows.Set(ds);
 				at_cols.Set(ds);
 				volume->m_height = at_rows.GetValue();
 				volume->m_width = at_cols.GetValue();
+
+				gdcm::Attribute<0x0028, 0x1052> at_rescale_intercept;
+				gdcm::Attribute<0x0028, 0x1053> at_rescale_slope;
+				at_rescale_intercept.Set(ds);
+				at_rescale_slope.Set(ds);
+				volume->m_rescale_intercept = at_rescale_intercept.GetValue();
+				volume->m_rescale_slope = at_rescale_slope.GetValue();
 			}
 
 			const gdcm::Pixmap &image = reader.GetPixmap();
 			int length = image.GetBufferLength();
 			
-			uint16_t* buffer = new uint16_t[length/2];
+			int16_t* buffer = new int16_t[length/2];
 			char* temp_buffer = new char[length];
 			image.GetBuffer(temp_buffer);
 
 			for (int i = 0; i < length; i+=2) {
-				uint16_t val = temp_buffer[i + 1];
-				val <<= 8;
-				val |= (uint16_t)temp_buffer[i];
-				buffer[i/2] = val;
+				int16_t val = (unsigned char)temp_buffer[i] | ((unsigned char)temp_buffer[i+1] << 8);
+				
+				buffer[i/2] = (val * volume->m_rescale_slope + volume->m_rescale_intercept);
 			}
 			
-			std::vector<uint16_t> slice(buffer, buffer + length/2);
+			std::vector<int16_t> slice(buffer, buffer + length/2);
 
 			volume->m_volume_data.push_back(slice);
 		}
@@ -72,38 +79,6 @@ namespace vdcm {
 
 	Volume::Volume() : m_width(0),m_height(0),m_depth(0) {
 
-	}
-
-	std::vector<uint16_t> Volume::getAxialSlice(int idx) {
-
-		return m_volume_data[idx];
-	}
-
-	std::vector<uint16_t> Volume::getCoronalSlice(int idx) {
-		std::vector<uint16_t> slice;
-
-		for (int i = 0; i < m_depth; i++) {
-			for (int j = 0; j < m_width; j++) {
-				uint16_t val = m_volume_data[i][idx * m_width + j];
-				slice.push_back(val);
-			}
-		}
-
-		return slice;
-	}
-
-	std::vector<uint16_t> Volume::getSagittalSlice(int idx) {
-		std::vector<uint16_t> slice;
-
-		for (int i = 0; i < m_depth; i++) {
-			for (int j = 0; j < m_height; j++) {
-				uint16_t val = m_volume_data[i][j * m_width + idx];
-				slice.push_back(val);
-			}
-
-		}
-
-		return slice;
 	}
 
 	Slice* Volume::getSlice(int mode, Axes* axes) {
@@ -168,7 +143,7 @@ namespace vdcm {
 
 				double c = c_0 * (1 - z_d) + c_1 * z_d;
 
-				intensity = (int)(c + 0.5);
+				intensity = (int16_t)(c + 0.5);
 
 				s->setVoxelIntensity(j, i, intensity);
 			}

@@ -20,6 +20,7 @@ signals:
 private slots:
 	void open();
 	void quit();
+	void reset();
 
 private:
 	void buildLayout();

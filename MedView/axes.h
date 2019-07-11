@@ -10,28 +10,55 @@ namespace vdcm {
 		Axes();
 		Axes(double, double, double);
 
-		Eigen::Vector3d getAxis(int);
+		Eigen::Vector3f getAxis(int);
 		void setCenter(double, double, double);
 		Eigen::Vector4d getCenter();
 
-		void setYaw(double);
-		double getYaw();
-		void setRoll(double);
-		double getRoll();
-		void setPitch(double);
-		double getPitch();
+		void setYaw(float);
+		float getYaw();
+		void setRoll(float);
+		float getRoll();
+		void setPitch(float);
+		float getPitch();
+
+		void addYaw(float);
+		void addRoll(float);
+		void addPitch(float);
+
+		void reset(double, double, double);
 	private:
 		Eigen::Vector4d m_center;
 
-		Eigen::Vector3d m_axis_axial;
-		Eigen::Vector3d m_axis_coronal;
-		Eigen::Vector3d m_axis_sagittal;
+		Eigen::Vector3f m_axis_axial;
+		Eigen::Vector3f m_axis_coronal;
+		Eigen::Vector3f m_axis_sagittal;
 
 		// Degrees
-		double m_degree_x;
-		double m_degree_y;
-		double m_degree_z;
+		float m_degree_x;
+		float m_degree_y;
+		float m_degree_z;
 	};
+
+	inline void Axes::setYaw(float angle) {
+		m_degree_z = angle;
+	}
+	inline float Axes::getYaw() {
+		return m_degree_z;
+	}
+	inline void Axes::setRoll(float angle) {
+		m_degree_y = angle;
+	}
+	inline float Axes::getRoll() {
+		return m_degree_y;
+	}
+	inline void Axes::setPitch(float angle) {
+		m_degree_x = angle;
+	}
+	inline float Axes::getPitch() {
+		return m_degree_x;
+	}
 }
+
+
 
 #endif // __AXES_H__

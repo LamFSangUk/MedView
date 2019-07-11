@@ -69,6 +69,16 @@ void MainWindow::createMenuBar() {
 
 	connect(openAction, SIGNAL(triggered()), this, SLOT(open()));
 	connect(quitAction, SIGNAL(triggered()), this, SLOT(quit()));
+
+	QMenu *view;
+	view = menuBar()->addMenu("&View");
+	
+	QAction *resetAction = new QAction("&Reset", this);
+	resetAction->setShortcut(Qt::Key_R | Qt::CTRL);
+	view->addAction(resetAction);
+
+	connect(resetAction, SIGNAL(triggered()), this, SLOT(reset()));
+
 }
 
 void MainWindow::open() {
@@ -76,19 +86,14 @@ void MainWindow::open() {
 
 	if (!str_dicom_folder.isEmpty() && !str_dicom_folder.isNull()) { // Prevent cancelation
 
-		//TODO:: delete Volume
-		//vdcm::Volume* vol = vdcm::read(str_dicom_folder.toUtf8().toStdString().c_str());
-
-		//this->m_axial_view->setVolume(vol);
-		//this->m_coronal_view->setVolume(vol);
-		//this->m_sagittal_view->setVolume(vol);
-
-		//emit changeVolumeData(vol);
-
 		m_dicom_manager->readDicom(str_dicom_folder.toUtf8().toStdString().c_str());
 	}
 }
 
 void MainWindow::quit() {
 	exit(0);
+}
+
+void MainWindow::reset() {
+	m_dicom_manager->reset();
 }

@@ -6,11 +6,16 @@
 
 #include "ImageViewWidget.h"
 
+#include <cmath>
+#define M_PI       3.14159265358979323846
+
+
 SliceWidget::SliceWidget(QWidget* parent=NULL)
 	: QLabel(parent)
 {
 	m_is_cursor_on = false;
 	m_is_slice_loaded = false;
+	m_is_left_pressed = false;
 
 	// Set default background color
 	this->setStyleSheet("QLabel { background-color : black; }");
@@ -36,9 +41,6 @@ void SliceWidget::setLines(QLine lh, QLine lv, QColor ch, QColor cv) {
 }
 
 void SliceWidget::drawSlice(QImage* img){
-	//if (m_slice != nullptr) {
-	//	delete m_slice;
-	//}
 
 	QPixmap *pixmap = new QPixmap();
 
@@ -47,6 +49,7 @@ void SliceWidget::drawSlice(QImage* img){
 		m_is_slice_loaded = true;
 	}
 	else {
+		*img = img->scaled(m_size);
 		*pixmap = QPixmap::fromImage(*img, Qt::AutoColor);
 		this->m_slice = *img;
 	}
@@ -76,11 +79,54 @@ void SliceWidget::drawAxes(QPainter *painter) {
 	qDebug() << this->m_line_vertical;
 }
 
+bool SliceWidget::is_point_on_lines(QPoint p) {
+	
+	QPoint ps = m_line_horizontal.p1();
+	QPoint pe = m_line_horizontal.p2();
+	QVector2D v_line(pe - ps);
+	QVector2D v_p(p - ps);
+	v_line.normalize();
+	v_p.normalize();
+	float degree = acos(QVector2D::dotProduct(v_line, v_p)) * 180 / M_PI;
+
+	if (degree < 1.0f) return true;
+	
+	ps = m_line_vertical.p1();
+	pe = m_line_vertical.p2();
+	v_line = QVector2D(pe - ps);
+	v_p = QVector2D(p - ps);
+	v_line.normalize();
+	v_p.normalize();
+	degree = acos(QVector2D::dotProduct(v_line, v_p)) * 180 / M_PI;
+
+	if (degree < 1.0f) return true;
+
+	return false;
+}
+
 void SliceWidget::mouseMoveEvent(QMouseEvent *e) {
 
 	if (m_is_slice_loaded && m_is_cursor_on) {
 
 		ImageViewWidget* manager = qobject_cast<ImageViewWidget*>(parent());		// Access parent widget
+
+		if (m_is_left_pressed && m_is_point_on_lines) {
+			if (m_prev_cursor_point == e->pos()) return;			// To prevent impossible acos
+
+			QPointF center;
+			QLineF(m_line_horizontal).intersect(QLineF(m_line_vertical), &center);	// Find intersection of lines
+			
+			qDebug() << "prev" << m_prev_cursor_point;
+			QVector2D v_prev(m_prev_cursor_point - center);
+			QVector2D v_cur(e->pos() - center);
+			v_prev.normalize();
+			v_cur.normalize();
+
+			float degree = acos(QVector2D::dotProduct(v_prev, v_cur)) * 180 / M_PI;
+
+			qDebug() << degree;
+			emit changeDegree(manager->getMode(),degree);
+		}
 
 		// Default values
 		int x = e->x();
@@ -98,12 +144,39 @@ void SliceWidget::mouseMoveEvent(QMouseEvent *e) {
 
 		emit changeCoords(x, y, z, intensity);
 	}
+
+	m_prev_cursor_point = e->pos();
+}
+
+void SliceWidget::mousePressEvent(QMouseEvent *e) {
+
+	if (m_is_slice_loaded && m_is_cursor_on) {
+
+		if (e->buttons() & Qt::LeftButton) {
+			qDebug() << "Left mouse pressed";
+			m_is_left_pressed = true;
+			m_is_point_on_lines = is_point_on_lines(e->pos());
+		}
+	}
+}
+
+void SliceWidget::mouseReleaseEvent(QMouseEvent *e) {
+
+	if (m_is_slice_loaded && m_is_cursor_on) {
+
+		if (e->button() == Qt::LeftButton) {
+			qDebug() << "Left mouse Released";
+			m_is_left_pressed = false;
+			m_is_point_on_lines = false;
+		}
+	}
 }
 
 void SliceWidget::wheelEvent(QWheelEvent *e) {
-	qDebug() << e->delta();
-
+	
 	if (m_is_slice_loaded && m_is_cursor_on) {
+		qDebug() << e->delta();
+
 		if (e->delta() >= 0) emit requestIncIndex();
 		else emit requestDecIndex();
 	}
@@ -112,7 +185,6 @@ void SliceWidget::wheelEvent(QWheelEvent *e) {
 void SliceWidget::resizeEvent(QResizeEvent* e) {
 	qDebug() << "Resized: " << e->size();
 	this->m_size = e->size();
-	qDebug() << m_size.height() << m_size.rheight();
 }
 
 /**

@@ -24,8 +24,10 @@ public:
 	void setSlider(QSlider*);
 	std::vector<int> getPixelInfo(int, int);		// Trnaslate label pixel to voxel information
 
+	int getMode();
+
 signals:
-	void changeSliceIdx(int,int,int,int);
+	void changeSliceIdx(int,int);
 private slots:
 	void setIndex(int);
 	void initView();
@@ -49,5 +51,9 @@ private:
 	void buildLayout();
 	void getSlice();
 };
+
+inline int ImageViewWidget::getMode() {
+	return m_mode;
+}
 
 #endif // __IMAGE_VIEW_WIDGET__

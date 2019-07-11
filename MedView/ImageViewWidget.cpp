@@ -54,12 +54,14 @@ void ImageViewWidget::buildLayout() {
 void ImageViewWidget::initView() {
 
 	connect(m_slider, SIGNAL(valueChanged(int)), this, SLOT(setIndex(int)));
-	connect(this, SIGNAL(changeSliceIdx(int, int, int, int)), m_dicom_manager, SLOT(setSliceIdx(int, int, int, int)));
+	connect(this, SIGNAL(changeSliceIdx(int, int)), m_dicom_manager, SLOT(setSliceIdx(int, int)));
 	connect(m_dicom_manager, SIGNAL(changeSlice(int, QImage*)), this, SLOT(draw(int, QImage*)));
 	connect(m_dicom_manager, SIGNAL(changeAxes()), this, SLOT(setLines()));
 
 	connect(m_slice_view, SIGNAL(requestIncIndex()), this, SLOT(increaseIndex()));
 	connect(m_slice_view, SIGNAL(requestDecIndex()), this, SLOT(decreaseIndex()));
+	
+	connect(m_slice_view, SIGNAL(changeDegree(int,float)), m_dicom_manager, SLOT(setDegree(int, float)));
 
 	m_slider->setEnabled(true);
 	m_slider->setMinimum(0);
@@ -113,11 +115,7 @@ std::vector<int> ImageViewWidget::getPixelInfo(int x, int y) {
 void ImageViewWidget::setIndex(int idx) {
 	this->m_idx_slice = idx;
 
-	//TODO::dynamic slice size
-	emit changeSliceIdx(m_mode, idx, 512, 512);
-
-	//this->getSlice();
-	//m_dicom_manager->getSlice(m_mode);
+	emit changeSliceIdx(m_mode, idx);
 }
 
 

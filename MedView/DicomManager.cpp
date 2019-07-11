@@ -1,6 +1,7 @@
 #include "DicomManager.h"
 #include<iostream>
 
+#include<QDebug>
 DicomManager::DicomManager(QObject *parent = NULL) 
 : QObject(parent) {
 	this->m_volume = nullptr;
@@ -29,7 +30,7 @@ void DicomManager::readDicom(const char* filename) {
 	emit changeVolume();
 }
 
-void DicomManager::extractSlice(int mode, int width, int height) {
+void DicomManager::extractSlice(int mode) {
 	
 	Slice* s = m_volume->getSlice(mode, m_axes);
 	switch (mode) {
@@ -49,17 +50,15 @@ void DicomManager::extractSlice(int mode, int width, int height) {
 	QImage slice(m_standard_slice_size, QImage::Format_Grayscale8);
 	for (int i = 0; i < m_standard_slice_size.height(); i++) {
 		for (int j = 0; j < m_standard_slice_size.width(); j++) {
-			double org_val = (double)s->getVoxelIntensity(j, i) / 256;
+			double org_val = (double)s->getVoxelIntensity(j, i);
 			if (org_val < 0) org_val = 0;
 			QRgb val = qRgb((int)(org_val+0.5), (int)(org_val + 0.5), (int)(org_val+0.5));
 			//slice.setPixelColor(j, i, (uint)(org_val + 0.5));
 			slice.setPixel(j, i, val);
 		}
 	}
-	QImage r_slice = slice.scaled(width, height);
 
-	emit changeSlice(mode, &r_slice);
-
+	emit changeSlice(mode, &slice);
 }
 
 /**
@@ -105,9 +104,9 @@ std::vector<int> DicomManager::getVoxelInfo(int mode, int slice_x, int slice_y) 
 	return voxel_info;
 }
 
-void DicomManager::setSliceIdx(int mode, int idx, int width, int height) {
+void DicomManager::setSliceIdx(int mode, int idx) {
 	Eigen::Vector4d c = m_axes->getCenter();
-	Eigen::Vector3d dir = m_axes->getAxis(mode);
+	Eigen::Vector3f dir = m_axes->getAxis(mode);
 	Eigen::Vector4d rdir;
 	rdir << dir(0), dir(1), dir(2), 0;
 	switch (mode) {
@@ -134,15 +133,43 @@ void DicomManager::setSliceIdx(int mode, int idx, int width, int height) {
 	m_axes->setCenter(c(0),c(1),c(2));
 	emit changeAxes();
 
-	extractSlice(mode, width, height);
+	extractSlice(mode);
+}
+void DicomManager::setDegree(int mode, float degree) {
+	switch (mode) {
+		case MODE_AXIAL:
+			m_axes->addYaw(degree);
+			calculateIdxes();
+			
+			extractSlice(MODE_CORONAL);
+			extractSlice(MODE_SAGITTAL);
+			break;
+		case MODE_CORONAL:
+			m_axes->addPitch(degree);
+			calculateIdxes();
+
+			extractSlice(MODE_AXIAL);
+			extractSlice(MODE_SAGITTAL);
+			break;
+		case MODE_SAGITTAL:
+			m_axes->addRoll(degree);
+			calculateIdxes();
+
+			extractSlice(MODE_AXIAL);
+			extractSlice(MODE_CORONAL);
+			break;
+		default:
+			break;
+	}
+	emit changeAxes();
 }
 
 std::vector<QLine> DicomManager::getAxesLines(int mode, int width, int height) {
 	Eigen::Vector4d c = m_axes->getCenter();
 	Eigen::Vector4d end_point;
-	Eigen::Vector3d dir_axial = m_axes->getAxis(MODE_AXIAL);
-	Eigen::Vector3d dir_coronal = m_axes->getAxis(MODE_CORONAL);
-	Eigen::Vector3d dir_sagittal = m_axes->getAxis(MODE_SAGITTAL);
+	Eigen::Vector3f dir_axial = m_axes->getAxis(MODE_AXIAL);
+	Eigen::Vector3f dir_coronal = m_axes->getAxis(MODE_CORONAL);
+	Eigen::Vector3f dir_sagittal = m_axes->getAxis(MODE_SAGITTAL);
 
 	Eigen::Vector4d rdir;
 
@@ -157,15 +184,15 @@ std::vector<QLine> DicomManager::getAxesLines(int mode, int width, int height) {
 
 			rdir << dir_coronal(0), dir_coronal(1), dir_coronal(2), 1;
 			end_point = c - (coronal_idx * rdir);
-			lh.setP1(QPoint((int)(end_point(0)*width_rate + 0.5), (int)(c(1)*height_rate + 0.5)));
+			lh.setP1(QPoint((int)(end_point(0)*width_rate + 0.5), (int)(end_point(1)*height_rate + 0.5)));
 			end_point = c + ((max_coronal_idx-coronal_idx) * rdir);
-			lh.setP2(QPoint((int)(end_point(0)*width_rate + 0.5), (int)(c(1)*height_rate + 0.5)));
+			lh.setP2(QPoint((int)(end_point(0)*width_rate + 0.5), (int)(end_point(1)*height_rate + 0.5)));
 
 			rdir << dir_sagittal(0), dir_sagittal(1), dir_sagittal(2), 1;
 			end_point = c - (sagittal_idx * rdir);
-			lv.setP1(QPoint((int)(c(0)*width_rate + 0.5), (int)(end_point(1)*height_rate + 0.5)));
+			lv.setP1(QPoint((int)(end_point(0)*width_rate + 0.5), (int)(end_point(1)*height_rate + 0.5)));
 			end_point = c + ((max_sagittal_idx-sagittal_idx) * rdir);
-			lv.setP2(QPoint((int)(c(0)*width_rate + 0.5), (int)(end_point(1)*height_rate + 0.5)));
+			lv.setP2(QPoint((int)(end_point(0)*width_rate + 0.5), (int)(end_point(1)*height_rate + 0.5)));
 
 			break;
 		case MODE_CORONAL:
@@ -174,15 +201,23 @@ std::vector<QLine> DicomManager::getAxesLines(int mode, int width, int height) {
 
 			rdir << dir_sagittal(0), dir_sagittal(1), dir_sagittal(2), 1;
 			end_point = c - (sagittal_idx * rdir);
-			lh.setP1(QPoint((int)(end_point(1)*width_rate + 0.5), (int)(c(2)*height_rate + 0.5)));
+			std::cout << end_point << std::endl;
+			lh.setP1(QPoint((int)(end_point(1)*width_rate + 0.5), (int)(end_point(2)*height_rate + 0.5)));
 			end_point = c + ((max_sagittal_idx - sagittal_idx) * rdir);
-			lh.setP2(QPoint((int)(end_point(1)*width_rate + 0.5), (int)(c(2)*height_rate + 0.5)));
+			std::cout << end_point << std::endl;
+			lh.setP2(QPoint((int)(end_point(1)*width_rate + 0.5), (int)(end_point(2)*height_rate + 0.5)));
+			qDebug() << lh;
+
 
 			rdir << dir_axial(0), dir_axial(1), dir_axial(2), 1;
 			end_point = c - (axial_idx * rdir);
-			lv.setP1(QPoint((int)(c(1)*width_rate + 0.5), (int)(end_point(2)*height_rate + 0.5)));
+			std::cout << end_point << std::endl;
+			lv.setP1(QPoint((int)(end_point(1)*width_rate + 0.5), (int)(end_point(2)*height_rate + 0.5)));
 			end_point = c + ((max_axial_idx - axial_idx) * rdir);
-			lv.setP2(QPoint((int)(c(1)*width_rate + 0.5), (int)(end_point(2)*height_rate + 0.5)));
+			std::cout << end_point << std::endl;
+			lv.setP2(QPoint((int)(end_point(1)*width_rate + 0.5), (int)(end_point(2)*height_rate + 0.5)));
+			qDebug() << lv;
+
 
 			break;
 		case MODE_SAGITTAL:
@@ -191,15 +226,15 @@ std::vector<QLine> DicomManager::getAxesLines(int mode, int width, int height) {
 
 			rdir << dir_coronal(0), dir_coronal(1), dir_coronal(2), 1;
 			end_point = c - (coronal_idx * rdir);
-			lh.setP1(QPoint((int)(end_point(0)*width_rate + 0.5), (int)(c(2)*height_rate + 0.5)));
+			lh.setP1(QPoint((int)(end_point(0)*width_rate + 0.5), (int)(end_point(2)*height_rate + 0.5)));
 			end_point = c + ((max_coronal_idx - coronal_idx) * rdir);
-			lh.setP2(QPoint((int)(end_point(0)*width_rate + 0.5), (int)(c(2)*height_rate + 0.5)));
+			lh.setP2(QPoint((int)(end_point(0)*width_rate + 0.5), (int)(end_point(2)*height_rate + 0.5)));
 
 			rdir << dir_axial(0), dir_axial(1), dir_axial(2), 1;
 			end_point = c - (axial_idx * rdir);
-			lv.setP1(QPoint((int)(c(0)*width_rate + 0.5), (int)(end_point(2)*height_rate + 0.5)));
+			lv.setP1(QPoint((int)(end_point(0)*width_rate + 0.5), (int)(end_point(2)*height_rate + 0.5)));
 			end_point = c + ((max_axial_idx - axial_idx) * rdir);
-			lv.setP2(QPoint((int)(c(0)*width_rate + 0.5), (int)(end_point(2)*height_rate + 0.5)));
+			lv.setP2(QPoint((int)(end_point(0)*width_rate + 0.5), (int)(end_point(2)*height_rate + 0.5)));
 
 			break;
 		default:
@@ -211,4 +246,103 @@ std::vector<QLine> DicomManager::getAxesLines(int mode, int width, int height) {
 	res.push_back(lv);
 
 	return res;
+}
+
+/**
+ * Calculate Max, Min and current index of slices about axis.
+ */
+void DicomManager::calculateIdxes() {
+	Eigen::Vector3f dir_axial = m_axes->getAxis(MODE_AXIAL);
+	Eigen::Vector3f dir_coronal = m_axes->getAxis(MODE_CORONAL);
+	Eigen::Vector3f dir_sagittal = m_axes->getAxis(MODE_SAGITTAL);
+
+	Eigen::Vector4d center_d = m_axes->getCenter();
+	Eigen::Vector3f center;
+	center << center_d(0), center_d(1), center_d(2);
+	Eigen::Vector3f point;
+
+	// Axial plane
+	point = center;
+	int count = 0;
+	while (!isPointOutOfVolume(point)) {
+		point -= dir_axial;
+		count++;
+	}
+	count--;
+
+	axial_idx = count;
+
+	point = center;
+	while (!isPointOutOfVolume(point)) {
+		point += dir_axial;
+		count++;
+	}
+	count--;
+
+	max_axial_idx = count;
+
+	// Coronal plane
+	point = center;
+	count = 0;
+	while (!isPointOutOfVolume(point)) {
+		point -= dir_coronal;
+		count++;
+	}
+	count--;
+
+	coronal_idx = count;
+
+	point = center;
+	while (!isPointOutOfVolume(point)) {
+		point += dir_coronal;
+		count++;
+	}
+	count--;
+
+	max_coronal_idx = count;
+
+	// Sagittal plane
+	point = center;
+	count = 0;
+	while (!isPointOutOfVolume(point)) {
+		point -= dir_sagittal;
+		count++;
+	}
+	count--;
+
+	sagittal_idx = count;
+
+	point = center;
+	while (!isPointOutOfVolume(point)) {
+		point += dir_sagittal;
+		count++;
+	}
+	count--;
+
+	max_sagittal_idx = count;
+}
+
+bool DicomManager::isPointOutOfVolume(Eigen::Vector3f p) {
+	if ((p(0) < 0) || (p(0) >= m_volume->getWidth())
+		|| (p(1) < 0) || (p(1) >= m_volume->getHeight())
+		|| (p(2) < 0) || (p(2) >= m_volume->getDepth())) {
+		return true;
+	}
+	return false;
+}
+
+void DicomManager::reset() {
+	
+	double center_x = (double)(m_volume->getWidth()) / 2;
+	double center_y = (double)(m_volume->getHeight()) / 2;
+	double center_z = (double)(m_volume->getDepth()) / 2;
+	m_axes->reset(center_x, center_y, center_z);
+
+	calculateIdxes();
+
+	extractSlice(MODE_AXIAL);
+	extractSlice(MODE_CORONAL);
+	extractSlice(MODE_SAGITTAL);
+
+	emit changeAxes();
 }

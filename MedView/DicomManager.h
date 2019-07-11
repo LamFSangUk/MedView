@@ -14,7 +14,7 @@ class DicomManager : public QObject{
 public:
 	DicomManager(QObject*);
 	void readDicom(const char*);
-	void extractSlice(int, int, int);
+	void extractSlice(int);
 	std::vector<int> getVoxelInfo(int, int, int);
 	inline QSize getStandardSliceSize();
 
@@ -31,12 +31,15 @@ public:
 
 	std::vector<QLine> getAxesLines(int, int, int);
 
+	void reset();
+
 signals:
 	void changeVolume();
 	void changeSlice(int, QImage*);
 	void changeAxes();
 private slots:
-	void setSliceIdx(int, int, int, int);
+	void setSliceIdx(int, int);
+	void setDegree(int, float);
 private:
 	const char* m_filename;
 
@@ -44,6 +47,8 @@ private:
 	vdcm::Axes* m_axes;
 
 	const QSize m_standard_slice_size = QSize(600, 600);
+	void calculateIdxes();
+	bool isPointOutOfVolume(Eigen::Vector3f);
 };
 
 inline QSize  DicomManager::getStandardSliceSize() {
