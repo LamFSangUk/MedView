@@ -12,8 +12,8 @@ namespace vdcm {
 
 	Axes::Axes(double x, double y, double z) {
 		m_axis_axial << 0.0, 0.0, 1.0;
-		m_axis_coronal << 1.0, 0.0, 0.0;
-		m_axis_sagittal << 0.0, 1.0, 0.0;
+		m_axis_coronal << 0.0, 1.0, 0.0;
+		m_axis_sagittal << 1.0, 0.0, 0.0;
 
 		m_degree_x = 0.0f;
 		m_degree_y = 0.0f;
@@ -22,13 +22,13 @@ namespace vdcm {
 		this->setCenter(x, y, z);
 	}
 
-	Eigen::Vector3f Axes::getAxis(int mode) {
+	Eigen::Vector3f Axes::getAxis(Mode mode) {
 		switch (mode) {
-		case MODE_AXIAL:
+		case Mode::MODE_AXIAL:
 			return m_axis_axial;
-		case MODE_CORONAL:
+		case Mode::MODE_CORONAL:
 			return m_axis_coronal;
-		case MODE_SAGITTAL:
+		case Mode::MODE_SAGITTAL:
 			return m_axis_sagittal;
 		default:
 			break;
@@ -39,8 +39,8 @@ namespace vdcm {
 
 	void Axes::reset(double x, double y, double z) {
 		m_axis_axial << 0.0, 0.0, 1.0;
-		m_axis_coronal << 1.0, 0.0, 0.0;
-		m_axis_sagittal << 0.0, 1.0, 0.0;
+		m_axis_coronal << 0.0, 1.0, 0.0;
+		m_axis_sagittal << 1.0, 0.0, 0.0;
 
 		m_degree_x = 0.0f;
 		m_degree_y = 0.0f;
@@ -55,6 +55,37 @@ namespace vdcm {
 
 	Eigen::Vector4d Axes::getCenter() {
 		return m_center;
+	}
+
+	std::tuple<double, double> Axes::getPlaneCenter(Mode m) {	
+		switch(m) {
+		case Mode::MODE_AXIAL:
+			return std::make_tuple(m_center(0), m_center(1));
+		case Mode::MODE_CORONAL:
+			return std::make_tuple(m_center(0), m_center(2));
+		case Mode::MODE_SAGITTAL:
+			return std::make_tuple(m_center(1), m_center(2));
+		default:
+			break;
+		}
+		return std::make_tuple(0,0);
+	}
+
+	/**
+	 * Return the angle of horizontal line
+	 */
+	float Axes::getAngle(Mode m) {
+		switch (m) {
+			case Mode::MODE_AXIAL:
+				return getYaw();
+			case Mode::MODE_CORONAL:
+				return getRoll();
+			case Mode::MODE_SAGITTAL:
+				return getPitch();
+			default:
+				break;
+		}
+		return 0;
 	}
 
 	void Axes::addYaw(float angle) {
@@ -93,6 +124,7 @@ namespace vdcm {
 		m_axis_sagittal << dir(0), dir(1), dir(2);
 		m_axis_sagittal.normalize();
 	}
+
 	void Axes::addRoll(float angle) {
 		m_degree_y += angle;
 
@@ -114,11 +146,11 @@ namespace vdcm {
 		Eigen::Vector4f dir;
 
 		// Direction of X-axis
-		dir << m_axis_coronal(0), m_axis_coronal(1), m_axis_coronal(2), 1;
+		dir << m_axis_sagittal(0), m_axis_sagittal(1), m_axis_sagittal(2), 1;
 		dir = mat * dir;
 		dir /= dir(3);
-		m_axis_coronal << dir(0), dir(1), dir(2);
-		m_axis_coronal.normalize();
+		m_axis_sagittal << dir(0), dir(1), dir(2);
+		m_axis_sagittal.normalize();
 		
 		// Direction of Z-axis
 		dir << m_axis_axial(0), m_axis_axial(1), m_axis_axial(2), 1;
@@ -127,6 +159,7 @@ namespace vdcm {
 		m_axis_axial << dir(0), dir(1), dir(2);
 		m_axis_axial.normalize();
 	}
+
 	void Axes::addPitch(float angle) {
 		m_degree_x += angle;
 
@@ -148,11 +181,11 @@ namespace vdcm {
 		Eigen::Vector4f dir;
 
 		// Direction of Y-axis
-		dir << m_axis_sagittal(0), m_axis_sagittal(1), m_axis_sagittal(2), 1;
+		dir << m_axis_coronal(0), m_axis_coronal(1), m_axis_coronal(2), 1;
 		dir = mat * dir;
 		dir /= dir(3);
-		m_axis_sagittal << dir(0), dir(1), dir(2);
-		m_axis_sagittal.normalize();
+		m_axis_coronal << dir(0), dir(1), dir(2);
+		m_axis_coronal.normalize();
 
 		// Direction of Z-axis
 		dir << m_axis_axial(0), m_axis_axial(1), m_axis_axial(2), 1;

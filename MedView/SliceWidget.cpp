@@ -46,9 +46,10 @@ void SliceWidget::drawSlice(QImage* img){
 
 	if (img == nullptr) {
 		*pixmap = QPixmap::fromImage(m_slice, Qt::AutoColor);
-		m_is_slice_loaded = true;
 	}
 	else {
+		m_is_slice_loaded = true;
+
 		*img = img->scaled(m_size);
 		*pixmap = QPixmap::fromImage(*img, Qt::AutoColor);
 		this->m_slice = *img;
@@ -79,30 +80,7 @@ void SliceWidget::drawAxes(QPainter *painter) {
 	qDebug() << this->m_line_vertical;
 }
 
-bool SliceWidget::is_point_on_lines(QPoint p) {
-	
-	QPoint ps = m_line_horizontal.p1();
-	QPoint pe = m_line_horizontal.p2();
-	QVector2D v_line(pe - ps);
-	QVector2D v_p(p - ps);
-	v_line.normalize();
-	v_p.normalize();
-	float degree = acos(QVector2D::dotProduct(v_line, v_p)) * 180 / M_PI;
 
-	if (degree < 1.0f) return true;
-	
-	ps = m_line_vertical.p1();
-	pe = m_line_vertical.p2();
-	v_line = QVector2D(pe - ps);
-	v_p = QVector2D(p - ps);
-	v_line.normalize();
-	v_p.normalize();
-	degree = acos(QVector2D::dotProduct(v_line, v_p)) * 180 / M_PI;
-
-	if (degree < 1.0f) return true;
-
-	return false;
-}
 
 void SliceWidget::mouseMoveEvent(QMouseEvent *e) {
 
@@ -113,19 +91,29 @@ void SliceWidget::mouseMoveEvent(QMouseEvent *e) {
 		if (m_is_left_pressed && m_is_point_on_lines) {
 			if (m_prev_cursor_point == e->pos()) return;			// To prevent impossible acos
 
+			// TODO:: Handle this logic that get degree of movement.
 			QPointF center;
 			QLineF(m_line_horizontal).intersect(QLineF(m_line_vertical), &center);	// Find intersection of lines
 			
 			qDebug() << "prev" << m_prev_cursor_point;
+
 			QVector2D v_prev(m_prev_cursor_point - center);
-			QVector2D v_cur(e->pos() - center);
+			QVector2D v_cur(e->pos()- center);
+			QVector2D v_dir(e->pos() - m_prev_cursor_point);
 			v_prev.normalize();
 			v_cur.normalize();
+			v_dir.normalize();
 
-			float degree = acos(QVector2D::dotProduct(v_prev, v_cur)) * 180 / M_PI;
+			qDebug() << v_prev;
+			qDebug() << QVector2D::dotProduct(v_dir, QVector2D(1, 0));
+			float prev_degree = acos(QVector2D::dotProduct(v_prev, QVector2D(1, 0))) * 180 / M_PI;
+			float cur_degree = acos(QVector2D::dotProduct(v_cur, QVector2D(1, 0))) * 180 / M_PI;
+			float degree = cur_degree - prev_degree;
 
+			qDebug() << prev_degree;
+			qDebug() << cur_degree;
 			qDebug() << degree;
-			emit changeDegree(manager->getMode(),degree);
+			emit changeDegree(degree);
 		}
 
 		// Default values
@@ -155,7 +143,7 @@ void SliceWidget::mousePressEvent(QMouseEvent *e) {
 		if (e->buttons() & Qt::LeftButton) {
 			qDebug() << "Left mouse pressed";
 			m_is_left_pressed = true;
-			m_is_point_on_lines = is_point_on_lines(e->pos());
+			m_is_point_on_lines = _isPointOnLines(e->pos());
 		}
 	}
 }
@@ -205,4 +193,38 @@ void SliceWidget::leaveEvent(QEvent *e) {
 	m_is_cursor_on = false;
 
 	this->m_cur_coord->setVisible(false);
+}
+
+bool SliceWidget::_isPointOnLines(QPoint p) {
+
+
+	// Horizontal line
+	QPointF ps = m_line_horizontal.p1();
+	QPointF pe = m_line_horizontal.p2();
+	QVector2D v_line(pe - ps);
+	v_line.normalize();
+
+	QPointF center = ps;
+	while (!_isPointNearPoint(center, pe, 1)) {
+		if(_isPointNearPoint(p, center, 3)) return true;
+		center = center + v_line.toPointF();
+	}
+
+	// Vertical line
+	ps = m_line_vertical.p1();
+	pe = m_line_vertical.p2();
+	v_line = QVector2D(pe - ps);
+	v_line.normalize();
+
+	center = ps;
+	while (!_isPointNearPoint(center, pe, 1)) {
+		if (_isPointNearPoint(p, center, 3)) return true;
+		center = center + v_line.toPointF();
+	}
+
+	return false;
+}
+
+bool SliceWidget::_isPointNearPoint(QPointF a, QPointF b, int range) {
+	return std::sqrt((a.x() - b.x()) *(a.x() - b.x()) + (a.y() - b.y()) *(a.y() - b.y())) <= range;
 }

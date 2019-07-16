@@ -1,7 +1,9 @@
 #ifndef __AXES_H__
 #define __AXES_H__
 
-#include "global.h"
+#include "common.h"
+
+#include <Eigen/Dense>
 
 namespace vdcm {
 	class Axes
@@ -10,9 +12,11 @@ namespace vdcm {
 		Axes();
 		Axes(double, double, double);
 
-		Eigen::Vector3f getAxis(int);
+		Eigen::Vector3f getAxis(Mode);
+		float getAngle(Mode);
 		void setCenter(double, double, double);
 		Eigen::Vector4d getCenter();
+		std::tuple<double, double> getPlaneCenter(Mode);
 
 		void setYaw(float);
 		float getYaw();

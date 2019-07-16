@@ -81,39 +81,16 @@ namespace vdcm {
 
 	}
 
-	Slice* Volume::getSlice(int mode, Axes* axes) {
-		Slice* s = new Slice(600, 600);
-
-		//get axes max coordinates
-		int max_width = 0;
-		int max_height = 0;
-		//TODO:: modify max from axes
-		switch (mode) {
-			case MODE_AXIAL:
-				max_width = m_width;
-				max_height = m_height;
-				break;
-			case MODE_CORONAL:
-				max_width = m_height;
-				max_height = m_depth;
-				break;
-			case MODE_SAGITTAL:
-				max_width = m_width;
-				max_height = m_depth;
-				break;
-			default:
-				break;
-		}
-		// Resize
-		s->refResize(max_width, max_height);
+	Slice* Volume::getSlice(Mode mode, Axes* axes, int width, int height, Eigen::Vector3f center) {
+		Slice* s = new Slice(width, height, (width -1)/2.0f, (height -1)/2.0f);
 
 		// Transformation
-		s->refTransform(mode, axes->getCenter(), axes->getYaw(), axes->getRoll(), axes->getPitch());
+		s->refTransform(mode, axes->getCenter(), center, axes->getYaw(), axes->getRoll(), axes->getPitch());
 
 		// Interpolate
 		for (int i = 0; i < s->getHeight(); i++) {
 			for (int j = 0; j < s->getWidth(); j++) {
-				Eigen::Vector4d pos = s->getVoxelCoord(j, i);
+				Eigen::Vector4f pos = s->getVoxelCoord(j, i);
 				int intensity = 0;
 
 				int x_0 = (int)pos(0);

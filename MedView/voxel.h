@@ -1,19 +1,19 @@
 #ifndef __VOXEL_H__
 #define __VOXEL_H__
 
-#include "global.h"
+#include <Eigen/Dense>
 
 class Voxel {
 public:
 	Voxel();
-	Voxel(double, double, double, int);
+	Voxel(float, float, float, int);
 
-	void setCoord(Eigen::Vector4d);
-	Eigen::Vector4d getCoord();
+	void setCoord(Eigen::Vector4f);
+	Eigen::Vector4f getCoord();
 	void setIntensity(int);
 	int getIntensity();
 private:
-	Eigen::Vector4d m_coord;
+	Eigen::Vector4f m_coord;
 	int m_intensity;
 };
 

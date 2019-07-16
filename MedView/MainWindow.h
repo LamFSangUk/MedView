@@ -15,7 +15,6 @@ public:
 	MainWindow();
 
 signals:
-	//void changeVolumeData(vdcm::Volume* vol);
 
 private slots:
 	void open();

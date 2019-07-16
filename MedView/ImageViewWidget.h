@@ -9,50 +9,45 @@
 #include "SliceWidget.h"
 #include "DicomManager.h"
 
-#define MODE_AXIAL 0
-#define MODE_SAGITTAL 1
-#define MODE_CORONAL 2
+#include "common.h"
 
 class ImageViewWidget : public QWidget
 {
 	Q_OBJECT
 public:
-	ImageViewWidget(int, DicomManager*, QWidget*);
-
-	//void setVolume(vdcm::Volume*);
+	ImageViewWidget(Mode, DicomManager*, QWidget*);
 
 	void setSlider(QSlider*);
 	std::vector<int> getPixelInfo(int, int);		// Trnaslate label pixel to voxel information
 
-	int getMode();
+	Mode getMode();
 
 signals:
-	void changeSliceIdx(int,int);
+
 private slots:
-	void setIndex(int);
 	void initView();
-	void draw(int, QImage*);
 	void setLines();
+	void updateView(std::map<Mode, DicomManager::SlicePacket>);
 
 	void increaseIndex();
 	void decreaseIndex();
 
 private:
-	int m_mode;
+	Mode m_mode;
 
 	int m_idx_slice;
 	int m_idx_max;
-	//vdcm::Volume* m_volume;
 	DicomManager *m_dicom_manager;
 	
 	SliceWidget* m_slice_view;
 	QSlider* m_slider;
 
 	void buildLayout();
-	void getSlice();
+	void draw(Mode, QImage*);
+
 };
 
-inline int ImageViewWidget::getMode() {
+inline Mode ImageViewWidget::getMode() {
 	return m_mode;
 }
 

@@ -5,6 +5,7 @@
 #include <QImage>
 #include "CursorCoordinator.h"
 
+#include "common.h"
 
 class SliceWidget : public QLabel {
 	Q_OBJECT
@@ -24,9 +25,11 @@ public:
 	void drawAxes(QPainter*);
 
 	void setLines(QLine, QLine, QColor, QColor);
+
+	QSize getSize();
 signals:
 	void changeCoords(int, int, int, int);
-	void changeDegree(int, float);
+	void changeDegree(float);
 	void requestIncIndex();
 	void requestDecIndex();
 private:
@@ -47,7 +50,12 @@ private:
 
 	QPoint m_prev_cursor_point;
 
-	bool is_point_on_lines(QPoint);
+	bool _isPointOnLines(QPoint);
+	bool _isPointNearPoint(QPointF, QPointF, int);
 };
+
+inline QSize SliceWidget::getSize() {
+	return m_size;
+}
 
 #endif //__SLICE_WIDGET_H__

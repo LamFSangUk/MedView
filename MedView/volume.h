@@ -2,9 +2,11 @@
 #define __VOLUME_H__
 
 #include <vector>
-#include "global.h"
 #include "slice.h"
 #include "axes.h"
+
+#include "common.h"
+#include <Eigen/Dense>
 
 namespace vdcm {
 	class Volume
@@ -14,7 +16,7 @@ namespace vdcm {
 
 		friend Volume* read(const char*);
 
-		Slice* getSlice(int, Axes*);
+		Slice* getSlice(Mode, Axes*, int, int, Eigen::Vector3f);
 
 		int getWidth();
 		int getHeight();

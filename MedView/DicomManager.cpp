@@ -6,6 +6,17 @@ DicomManager::DicomManager(QObject *parent = NULL)
 : QObject(parent) {
 	this->m_volume = nullptr;
 	this->m_axes = nullptr;
+
+	this->m_axial_slice = nullptr;
+	this->m_coronal_slice = nullptr;
+	this->m_sagittal_slice = nullptr;
+
+	// Listening value has changed, then update slices.
+	connect(this, &DicomManager::changeValue, [=]() {
+		this->_updateSlice();
+	});
+
+	connect(this, &DicomManager::changeVolume, this, &DicomManager::changeValue);
 }
 
 void DicomManager::readDicom(const char* filename) {
@@ -14,51 +25,9 @@ void DicomManager::readDicom(const char* filename) {
 	this->m_volume = vdcm::read(filename);
 
 	// Set default axes
-	double center_x = (double)(m_volume->getWidth()) / 2;
-	double center_y = (double)(m_volume->getHeight()) / 2;
-	double center_z = (double)(m_volume->getDepth()) / 2;
-	this->m_axes = new vdcm::Axes(center_x, center_y, center_z);
-
-	max_axial_idx = m_volume->getDepth() - 2;
-	max_coronal_idx = m_volume->getHeight() - 2;
-	max_sagittal_idx = m_volume->getWidth() - 2;
-
-	axial_idx = (int)(center_z + 0.5);
-	coronal_idx = (int)(center_y + 0.5);
-	sagittal_idx = (int)(center_x + 0.5);
+	this->_initValues();
 
 	emit changeVolume();
-}
-
-void DicomManager::extractSlice(int mode) {
-	
-	Slice* s = m_volume->getSlice(mode, m_axes);
-	switch (mode) {
-		case MODE_AXIAL:
-			axial_slice = s;
-			break;
-		case MODE_CORONAL:
-			coronal_slice = s;
-			break;
-		case MODE_SAGITTAL:
-			sagittal_slice = s;
-			break;
-		default:
-			break;
-	}
-
-	QImage slice(m_standard_slice_size, QImage::Format_Grayscale8);
-	for (int i = 0; i < m_standard_slice_size.height(); i++) {
-		for (int j = 0; j < m_standard_slice_size.width(); j++) {
-			double org_val = (double)s->getVoxelIntensity(j, i);
-			if (org_val < 0) org_val = 0;
-			QRgb val = qRgb((int)(org_val+0.5), (int)(org_val + 0.5), (int)(org_val+0.5));
-			//slice.setPixelColor(j, i, (uint)(org_val + 0.5));
-			slice.setPixel(j, i, val);
-		}
-	}
-
-	emit changeSlice(mode, &slice);
 }
 
 /**
@@ -69,8 +38,8 @@ void DicomManager::extractSlice(int mode) {
  * @param int slice_y : y coordinate of slice
  * @return vector<int> : coordinate(x,y,z) and intensity of the voxel
  */
-std::vector<int> DicomManager::getVoxelInfo(int mode, int slice_x, int slice_y) {
-	Eigen::Vector4d position;
+std::vector<int> DicomManager::getVoxelInfo(Mode mode, int slice_x, int slice_y) {
+	Eigen::Vector4f position;
 	int intensity;
 
 	if (slice_x < 0) slice_x = 0;
@@ -79,17 +48,17 @@ std::vector<int> DicomManager::getVoxelInfo(int mode, int slice_x, int slice_y) 
 	else if (slice_y >= m_standard_slice_size.height()) slice_y = m_standard_slice_size.height();
 
 	switch (mode) {
-		case MODE_AXIAL:
-			position = axial_slice->getVoxelCoord(slice_x, slice_y);
-			intensity = axial_slice->getVoxelIntensity(slice_x, slice_y);
+		case Mode::MODE_AXIAL:
+			position = m_axial_slice->getVoxelCoord(slice_x, slice_y);
+			intensity = m_axial_slice->getVoxelIntensity(slice_x, slice_y);
 			break;
-		case MODE_CORONAL:
-			position = coronal_slice->getVoxelCoord(slice_x, slice_y);
-			intensity = coronal_slice->getVoxelIntensity(slice_x, slice_y);
+		case Mode::MODE_CORONAL:
+			position = m_coronal_slice->getVoxelCoord(slice_x, slice_y);
+			intensity = m_coronal_slice->getVoxelIntensity(slice_x, slice_y);
 			break;
-		case MODE_SAGITTAL:
-			position = sagittal_slice->getVoxelCoord(slice_x, slice_y);
-			intensity = sagittal_slice->getVoxelIntensity(slice_x, slice_y);
+		case Mode::MODE_SAGITTAL:
+			position = m_sagittal_slice->getVoxelCoord(slice_x, slice_y);
+			intensity = m_sagittal_slice->getVoxelIntensity(slice_x, slice_y);
 			break;
 		default:
 			break;
@@ -104,59 +73,102 @@ std::vector<int> DicomManager::getVoxelInfo(int mode, int slice_x, int slice_y) 
 	return voxel_info;
 }
 
-void DicomManager::setSliceIdx(int mode, int idx) {
+/**
+ * Update the slice index
+ */
+void DicomManager::updateSliceIndex(Mode m, int value) {
 	Eigen::Vector4d c = m_axes->getCenter();
-	Eigen::Vector3f dir = m_axes->getAxis(mode);
+	Eigen::Vector3f dir = m_axes->getAxis(m);
 	Eigen::Vector4d rdir;
 	rdir << dir(0), dir(1), dir(2), 0;
-	switch (mode) {
-		case MODE_AXIAL:
-			c = c + rdir * (idx - axial_idx);		//diff
-			std::cout << "AXIAL" << c << std::endl;
-			axial_idx = idx;
-			break;
-		case MODE_CORONAL:
-			c = c + rdir * (idx - coronal_idx);		//diff
-			coronal_idx = idx;
-			std::cout << "CORONAL" << c << std::endl;
 
-			break;
-		case MODE_SAGITTAL:
-			c = c + rdir * (idx - sagittal_idx);	//diff
-			sagittal_idx = idx;
-			std::cout << "SAGITTAL"<< c << std::endl;
+	//int mode_flag = m;
+	int prev_idx;
 
+	switch (m) {
+		case Mode::MODE_AXIAL:
+			prev_idx = m_axial_idx;
+			m_axial_idx = value;
+			if (m_axial_idx < 0) m_axial_idx = 0;
+			if (m_axial_idx > m_max_axial_idx) m_axial_idx = m_max_axial_idx;
+
+			c = c + rdir * (m_axial_idx - prev_idx);
+			m_axial_center = m_axial_center + dir * (m_axial_idx - prev_idx);
+			break;
+		case Mode::MODE_CORONAL:
+			prev_idx = m_coronal_idx;
+			m_coronal_idx = value;
+			if (m_coronal_idx < 0) m_coronal_idx = 0;
+			if (m_coronal_idx > m_max_coronal_idx) m_coronal_idx = m_max_coronal_idx;
+
+			c = c + rdir * (m_coronal_idx - prev_idx);
+			m_coronal_center = m_coronal_center + dir * (m_coronal_idx - prev_idx);
+			break;
+		case Mode::MODE_SAGITTAL:
+			prev_idx = m_sagittal_idx;
+			m_sagittal_idx = value;
+			if (m_sagittal_idx < 0) m_sagittal_idx = 0;
+			if (m_sagittal_idx > m_max_sagittal_idx) m_sagittal_idx = m_max_sagittal_idx;
+
+			c = c + rdir * (m_sagittal_idx - prev_idx);
+			m_sagittal_center = m_sagittal_center + dir * (m_sagittal_idx - prev_idx);
 			break;
 		default:
 			break;
 	}
-	m_axes->setCenter(c(0),c(1),c(2));
-	emit changeAxes();
+	m_axes->setCenter(c(0), c(1), c(2));
 
-	extractSlice(mode);
+	emit changeValue();
 }
-void DicomManager::setDegree(int mode, float degree) {
+
+/**
+ * Update the angle about axes
+ */
+void DicomManager::updateAngle(Mode m, float degree) {
+
+	//int mode_flag = m;
+
+	switch (m) {
+		case Mode::MODE_AXIAL:
+			m_axes->addYaw(degree);
+			break;
+		case Mode::MODE_CORONAL:
+			m_axes->addRoll(degree);
+			break;
+		case Mode::MODE_SAGITTAL:
+			m_axes->addPitch(degree);
+			break;
+		default:
+			break;
+	}
+	calculateIdxes();
+
+	emit changeValue();
+}
+
+// Will be deprecated
+void DicomManager::setDegree(Mode mode, float degree) {
 	switch (mode) {
-		case MODE_AXIAL:
+		case Mode::MODE_AXIAL:
 			m_axes->addYaw(degree);
 			calculateIdxes();
 			
-			extractSlice(MODE_CORONAL);
-			extractSlice(MODE_SAGITTAL);
+			//extractSlice(Mode::MODE_CORONAL);
+			//extractSlice(Mode::MODE_SAGITTAL);
 			break;
-		case MODE_CORONAL:
+		case Mode::MODE_CORONAL:
 			m_axes->addPitch(degree);
 			calculateIdxes();
 
-			extractSlice(MODE_AXIAL);
-			extractSlice(MODE_SAGITTAL);
+			//extractSlice(Mode::MODE_AXIAL);
+			//extractSlice(Mode::MODE_SAGITTAL);
 			break;
-		case MODE_SAGITTAL:
+		case Mode::MODE_SAGITTAL:
 			m_axes->addRoll(degree);
 			calculateIdxes();
 
-			extractSlice(MODE_AXIAL);
-			extractSlice(MODE_CORONAL);
+			//extractSlice(Mode::MODE_AXIAL);
+			//extractSlice(Mode::MODE_CORONAL);
 			break;
 		default:
 			break;
@@ -164,86 +176,32 @@ void DicomManager::setDegree(int mode, float degree) {
 	emit changeAxes();
 }
 
-std::vector<QLine> DicomManager::getAxesLines(int mode, int width, int height) {
-	Eigen::Vector4d c = m_axes->getCenter();
-	Eigen::Vector4d end_point;
-	Eigen::Vector3f dir_axial = m_axes->getAxis(MODE_AXIAL);
-	Eigen::Vector3f dir_coronal = m_axes->getAxis(MODE_CORONAL);
-	Eigen::Vector3f dir_sagittal = m_axes->getAxis(MODE_SAGITTAL);
+std::vector<QLine> DicomManager::getAxesLines(Mode mode, int width, int height) {
+	
+	float angle = m_axes->getAngle(mode);
+	Eigen::Vector4d center = m_axes->getCenter();
 
-	Eigen::Vector4d rdir;
+	std::tuple<int, int> plane_center;
 
-	QLine lh;
-	QLine lv;
-
-	double width_rate, height_rate;
 	switch (mode) {
-		case MODE_AXIAL:
-			width_rate = (double)width / m_volume->getWidth();
-			height_rate = (double)height / m_volume->getHeight();
-
-			rdir << dir_coronal(0), dir_coronal(1), dir_coronal(2), 1;
-			end_point = c - (coronal_idx * rdir);
-			lh.setP1(QPoint((int)(end_point(0)*width_rate + 0.5), (int)(end_point(1)*height_rate + 0.5)));
-			end_point = c + ((max_coronal_idx-coronal_idx) * rdir);
-			lh.setP2(QPoint((int)(end_point(0)*width_rate + 0.5), (int)(end_point(1)*height_rate + 0.5)));
-
-			rdir << dir_sagittal(0), dir_sagittal(1), dir_sagittal(2), 1;
-			end_point = c - (sagittal_idx * rdir);
-			lv.setP1(QPoint((int)(end_point(0)*width_rate + 0.5), (int)(end_point(1)*height_rate + 0.5)));
-			end_point = c + ((max_sagittal_idx-sagittal_idx) * rdir);
-			lv.setP2(QPoint((int)(end_point(0)*width_rate + 0.5), (int)(end_point(1)*height_rate + 0.5)));
-
+		case Mode::MODE_AXIAL:
+			plane_center = m_axial_slice->getPositionOfVoxel(center(0),center(1), center(2));
 			break;
-		case MODE_CORONAL:
-			width_rate = (double)width / m_volume->getHeight();
-			height_rate = (double)height / m_volume->getDepth();
-
-			rdir << dir_sagittal(0), dir_sagittal(1), dir_sagittal(2), 1;
-			end_point = c - (sagittal_idx * rdir);
-			std::cout << end_point << std::endl;
-			lh.setP1(QPoint((int)(end_point(1)*width_rate + 0.5), (int)(end_point(2)*height_rate + 0.5)));
-			end_point = c + ((max_sagittal_idx - sagittal_idx) * rdir);
-			std::cout << end_point << std::endl;
-			lh.setP2(QPoint((int)(end_point(1)*width_rate + 0.5), (int)(end_point(2)*height_rate + 0.5)));
-			qDebug() << lh;
-
-
-			rdir << dir_axial(0), dir_axial(1), dir_axial(2), 1;
-			end_point = c - (axial_idx * rdir);
-			std::cout << end_point << std::endl;
-			lv.setP1(QPoint((int)(end_point(1)*width_rate + 0.5), (int)(end_point(2)*height_rate + 0.5)));
-			end_point = c + ((max_axial_idx - axial_idx) * rdir);
-			std::cout << end_point << std::endl;
-			lv.setP2(QPoint((int)(end_point(1)*width_rate + 0.5), (int)(end_point(2)*height_rate + 0.5)));
-			qDebug() << lv;
-
-
+		case Mode::MODE_CORONAL:
+			plane_center = m_coronal_slice->getPositionOfVoxel(center(0), center(1), center(2));
 			break;
-		case MODE_SAGITTAL:
-			width_rate = (double)width / m_volume->getWidth();
-			height_rate = (double)height / m_volume->getDepth();
-
-			rdir << dir_coronal(0), dir_coronal(1), dir_coronal(2), 1;
-			end_point = c - (coronal_idx * rdir);
-			lh.setP1(QPoint((int)(end_point(0)*width_rate + 0.5), (int)(end_point(2)*height_rate + 0.5)));
-			end_point = c + ((max_coronal_idx - coronal_idx) * rdir);
-			lh.setP2(QPoint((int)(end_point(0)*width_rate + 0.5), (int)(end_point(2)*height_rate + 0.5)));
-
-			rdir << dir_axial(0), dir_axial(1), dir_axial(2), 1;
-			end_point = c - (axial_idx * rdir);
-			lv.setP1(QPoint((int)(end_point(0)*width_rate + 0.5), (int)(end_point(2)*height_rate + 0.5)));
-			end_point = c + ((max_axial_idx - axial_idx) * rdir);
-			lv.setP2(QPoint((int)(end_point(0)*width_rate + 0.5), (int)(end_point(2)*height_rate + 0.5)));
-
+		case Mode::MODE_SAGITTAL:
+			plane_center = m_sagittal_slice->getPositionOfVoxel(center(0), center(1), center(2));
 			break;
 		default:
 			break;
 	}
 
+	
+
 	std::vector<QLine> res;
-	res.push_back(lh);
-	res.push_back(lv);
+	//res.push_back(lh);
+	//res.push_back(lv);
 
 	return res;
 }
@@ -252,9 +210,9 @@ std::vector<QLine> DicomManager::getAxesLines(int mode, int width, int height) {
  * Calculate Max, Min and current index of slices about axis.
  */
 void DicomManager::calculateIdxes() {
-	Eigen::Vector3f dir_axial = m_axes->getAxis(MODE_AXIAL);
-	Eigen::Vector3f dir_coronal = m_axes->getAxis(MODE_CORONAL);
-	Eigen::Vector3f dir_sagittal = m_axes->getAxis(MODE_SAGITTAL);
+	Eigen::Vector3f dir_axial = m_axes->getAxis(Mode::MODE_AXIAL);
+	Eigen::Vector3f dir_coronal = m_axes->getAxis(Mode::MODE_CORONAL);
+	Eigen::Vector3f dir_sagittal = m_axes->getAxis(Mode::MODE_SAGITTAL);
 
 	Eigen::Vector4d center_d = m_axes->getCenter();
 	Eigen::Vector3f center;
@@ -264,85 +222,198 @@ void DicomManager::calculateIdxes() {
 	// Axial plane
 	point = center;
 	int count = 0;
-	while (!isPointOutOfVolume(point)) {
+	while (!_isPointOutOfVolume(point)) {
 		point -= dir_axial;
 		count++;
 	}
 	count--;
 
-	axial_idx = count;
+	m_axial_idx = count;
 
 	point = center;
-	while (!isPointOutOfVolume(point)) {
+	while (!_isPointOutOfVolume(point)) {
 		point += dir_axial;
 		count++;
 	}
 	count--;
 
-	max_axial_idx = count;
+	m_max_axial_idx = count;
 
 	// Coronal plane
 	point = center;
 	count = 0;
-	while (!isPointOutOfVolume(point)) {
+	while (!_isPointOutOfVolume(point)) {
 		point -= dir_coronal;
 		count++;
 	}
 	count--;
 
-	coronal_idx = count;
+	m_coronal_idx = count;
 
 	point = center;
-	while (!isPointOutOfVolume(point)) {
+	while (!_isPointOutOfVolume(point)) {
 		point += dir_coronal;
 		count++;
 	}
 	count--;
 
-	max_coronal_idx = count;
+	m_max_coronal_idx = count;
 
 	// Sagittal plane
 	point = center;
 	count = 0;
-	while (!isPointOutOfVolume(point)) {
+	while (!_isPointOutOfVolume(point)) {
 		point -= dir_sagittal;
 		count++;
 	}
 	count--;
 
-	sagittal_idx = count;
+	m_sagittal_idx = count;
 
 	point = center;
-	while (!isPointOutOfVolume(point)) {
+	while (!_isPointOutOfVolume(point)) {
 		point += dir_sagittal;
 		count++;
 	}
 	count--;
 
-	max_sagittal_idx = count;
+	m_max_sagittal_idx = count;
 }
 
-bool DicomManager::isPointOutOfVolume(Eigen::Vector3f p) {
+
+
+void DicomManager::reset() {
+	_initValues();
+
+	emit changeValue();
+}
+
+/**
+ * Initialize axes and slice indexes.
+ */
+void DicomManager::_initValues() {
+	double center_x = (double)(m_volume->getWidth()) / 2;
+	double center_y = (double)(m_volume->getHeight()) / 2;
+	double center_z = (double)(m_volume->getDepth()) / 2;
+	this->m_axes = new vdcm::Axes(center_x, center_y, center_z);
+
+	m_max_axial_idx = m_volume->getDepth() - 2;
+	m_max_coronal_idx = m_volume->getHeight() - 2;
+	m_max_sagittal_idx = m_volume->getWidth() - 2;
+
+	m_axial_idx = (int)(center_z + 0.5);
+	m_coronal_idx = (int)(center_y + 0.5);
+	m_sagittal_idx = (int)(center_x + 0.5);
+
+	m_axial_center << center_x, center_y, center_z;
+	m_coronal_center << center_x, center_y, center_z;
+	m_sagittal_center << center_x, center_y, center_z;
+}
+
+/**
+ * Convert Slice object to QImage object
+ * 
+ * @param Slice* s : target slice
+ * @return QImage : converted slice image
+ */
+QImage DicomManager::_convertSliceToImage(Slice* s) {
+	QImage slice(m_standard_slice_size, QImage::Format_Grayscale8);
+	for (int i = 0; i < m_standard_slice_size.height(); i++) {
+		for (int j = 0; j < m_standard_slice_size.width(); j++) {
+			double org_val = (double)s->getVoxelIntensity(j, i);
+			if (org_val < 0) org_val = 0;
+			QRgb val = qRgb((int)(org_val + 0.5), (int)(org_val + 0.5), (int)(org_val + 0.5));
+			slice.setPixel(j, i, val);
+		}
+	}
+
+	return slice;
+}
+
+/**
+ * Extract the slice from volume data and update it.
+ */
+void DicomManager::_updateSlice() {
+	qDebug() << "Updated Varaibles";
+	qDebug() << m_axial_idx << m_coronal_idx << m_sagittal_idx;
+
+	// Axial plane
+	/*if (m_axial_slice) {
+		qDebug() << "here";
+		delete m_axial_slice;
+		m_axial_slice = nullptr;
+	}*/
+	m_axial_slice = m_volume->getSlice(Mode::MODE_AXIAL, m_axes,
+		m_standard_slice_size.width(), m_standard_slice_size.height(), m_axial_center);
+	std::vector<QLine> axial_lines = getAxesLines(Mode::MODE_AXIAL, m_standard_slice_size.width(), m_standard_slice_size.height());
+
+	// Coronal plane
+	/*if (m_coronal_slice) {
+		qDebug() << "3here";
+		delete m_coronal_slice;
+		m_coronal_slice = nullptr;
+	}*/
+	m_coronal_slice = m_volume->getSlice(Mode::MODE_CORONAL, m_axes,
+		m_standard_slice_size.width(), m_standard_slice_size.height(), m_coronal_center);
+	std::vector<QLine> coronal_lines = getAxesLines(Mode::MODE_CORONAL, m_standard_slice_size.width(), m_standard_slice_size.height());
+
+	// Sagittal plane
+	/*if (m_sagittal_slice) {
+		qDebug() << "there";
+		delete m_sagittal_slice;
+		m_sagittal_slice = nullptr;
+	}*/
+	m_sagittal_slice = m_volume->getSlice(Mode::MODE_SAGITTAL, m_axes,
+		m_standard_slice_size.width(), m_standard_slice_size.height(), m_sagittal_center);
+	std::vector<QLine> sagittal_lines = getAxesLines(Mode::MODE_SAGITTAL, m_standard_slice_size.width(), m_standard_slice_size.height());
+	
+
+	// create parameter packets
+	std::map<Mode, SlicePacket> packets;
+	SlicePacket packet;
+
+	Eigen::Vector4d center = m_axes->getCenter();
+	std::tuple<int, int> plane_center;
+	packet.size = m_standard_slice_size;
+
+	packet.cur_idx = m_axial_idx;
+	packet.max_idx = m_max_axial_idx;
+	packet.slice = _convertSliceToImage(m_axial_slice);
+	plane_center = m_axial_slice->getPositionOfVoxel(center(0), center(1), center(2));
+	packet.line_center = QPoint(std::get<0>(plane_center),std::get<1>(plane_center));
+	packet.angle = m_axes->getAngle(Mode::MODE_AXIAL);
+	packets.insert(std::pair<Mode, SlicePacket>(Mode::MODE_AXIAL, packet));
+
+	packet.cur_idx = m_coronal_idx;
+	packet.max_idx = m_max_coronal_idx;
+	packet.slice = _convertSliceToImage(m_coronal_slice);
+	plane_center = m_coronal_slice->getPositionOfVoxel(center(0), center(1), center(2));
+	packet.line_center = QPoint(std::get<0>(plane_center), std::get<1>(plane_center));
+	packet.angle = m_axes->getAngle(Mode::MODE_CORONAL);
+	packets.insert(std::pair<Mode, SlicePacket>(Mode::MODE_CORONAL, packet));
+
+	packet.cur_idx = m_sagittal_idx;
+	packet.max_idx = m_max_sagittal_idx;
+	packet.slice = _convertSliceToImage(m_sagittal_slice);
+	plane_center = m_sagittal_slice->getPositionOfVoxel(center(0), center(1), center(2));
+	packet.line_center = QPoint(std::get<0>(plane_center), std::get<1>(plane_center));
+	packet.angle = m_axes->getAngle(Mode::MODE_SAGITTAL);
+	packets.insert(std::pair<Mode, SlicePacket>(Mode::MODE_SAGITTAL, packet));
+
+	emit changeSlice(packets);
+}
+
+/**
+ * Check a point is out of range of volume.
+ * 
+ * @param Eigen::Vector3f p : a point coordinate
+ * @return bool : return true if the point is outside of volume.
+ */
+bool DicomManager::_isPointOutOfVolume(Eigen::Vector3f p) {
 	if ((p(0) < 0) || (p(0) >= m_volume->getWidth())
 		|| (p(1) < 0) || (p(1) >= m_volume->getHeight())
 		|| (p(2) < 0) || (p(2) >= m_volume->getDepth())) {
 		return true;
 	}
 	return false;
-}
-
-void DicomManager::reset() {
-	
-	double center_x = (double)(m_volume->getWidth()) / 2;
-	double center_y = (double)(m_volume->getHeight()) / 2;
-	double center_z = (double)(m_volume->getDepth()) / 2;
-	m_axes->reset(center_x, center_y, center_z);
-
-	calculateIdxes();
-
-	extractSlice(MODE_AXIAL);
-	extractSlice(MODE_CORONAL);
-	extractSlice(MODE_SAGITTAL);
-
-	emit changeAxes();
 }

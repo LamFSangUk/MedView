@@ -17,6 +17,10 @@ MainWindow::MainWindow() {
 	buildLayout();
 
 	createMenuBar();
+
+	connect(m_dicom_manager, &DicomManager::changeVolume, [this] {
+		this->setWindowTitle(QString("MedView(")+QString(this->m_dicom_manager->getFilename())+QString(")"));
+	});
 }
 
 void MainWindow::buildLayout() {
@@ -25,15 +29,15 @@ void MainWindow::buildLayout() {
 	QGridLayout *layout = new QGridLayout(window);
 	
 	/* Axial View*/
-	this->m_axial_view = new ImageViewWidget(MODE_AXIAL, this->m_dicom_manager, this);
+	this->m_axial_view = new ImageViewWidget(Mode::MODE_AXIAL, this->m_dicom_manager, this);
 	this->m_axial_view->setMinimumWidth(512);
 
 	/* Coronal View*/
-	this->m_coronal_view = new ImageViewWidget(MODE_CORONAL, this->m_dicom_manager, this);
+	this->m_coronal_view = new ImageViewWidget(Mode::MODE_CORONAL, this->m_dicom_manager, this);
 	this->m_coronal_view->setMinimumWidth(512);
 
 	/* Sagittal View*/
-	this->m_sagittal_view = new ImageViewWidget(MODE_SAGITTAL, this->m_dicom_manager, this);
+	this->m_sagittal_view = new ImageViewWidget(Mode::MODE_SAGITTAL, this->m_dicom_manager, this);
 	this->m_sagittal_view->setMinimumWidth(512);
 
 	
@@ -42,8 +46,8 @@ void MainWindow::buildLayout() {
 	vrView->setMinimumWidth(512);
 
 	layout->addWidget(m_axial_view, 0, 0);
-	layout->addWidget(m_coronal_view, 0, 1);
-	layout->addWidget(m_sagittal_view, 1, 0);
+	layout->addWidget(m_coronal_view, 1, 0);
+	layout->addWidget(m_sagittal_view, 0, 1);
 	layout->addWidget(vrView,1,1);
 
 	window->setLayout(layout);

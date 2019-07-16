@@ -1,23 +1,30 @@
 #ifndef __SLICE_H__
 #define __SLICE_H__
 
-#include "global.h"
 #include "voxel.h"
 #include <vector>
+
+#include "common.h"
+
+#include <Eigen/Dense>
 
 class Slice {
 public:
 	Slice();
 	Slice(int, int);
+	Slice(int, int, float, float);
+	Slice(const Slice&);
+	Slice& operator=(const Slice&);
 
-	void refTransform(int, Eigen::Vector4d, double, double, double);
+	void refTransform(Mode, Eigen::Vector4d, Eigen::Vector3f, float, float, float);
 	void refResize(int, int);
 
 	int getWidth();
 	int getHeight();
-	Eigen::Vector4d getVoxelCoord(int, int);
+	Eigen::Vector4f getVoxelCoord(int, int);
 	void setVoxelIntensity(int, int, int);
 	int getVoxelIntensity(int, int);
+	std::tuple<int, int> getPositionOfVoxel(float, float, float);
 private:
 	int m_width;
 	int m_height;
@@ -35,7 +42,7 @@ inline int Slice::getHeight() {
 	return m_height;
 }
 
-inline Eigen::Vector4d Slice::getVoxelCoord(int x, int y) {
+inline Eigen::Vector4f Slice::getVoxelCoord(int x, int y) {
 	return m_slice[y][x].getCoord();
 }
 
