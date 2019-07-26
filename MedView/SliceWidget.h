@@ -16,6 +16,7 @@ public:
 	void mouseMoveEvent(QMouseEvent *) override;
 	void mousePressEvent(QMouseEvent*) override;
 	void mouseReleaseEvent(QMouseEvent*) override;
+	void mouseDoubleClickEvent(QMouseEvent*) override;
 	void wheelEvent(QWheelEvent *) override;
 	void resizeEvent(QResizeEvent *) override;
 	void enterEvent(QEvent *) override;
@@ -32,10 +33,13 @@ signals:
 	void changeDegree(float);
 	void requestIncIndex();
 	void requestDecIndex();
+	void changeWindowing(int, int);
+	void changeAxesCenter(int, int);
 private:
 	bool m_is_slice_loaded;		// check the slice to show is loaded
 	bool m_is_cursor_on;		// check the mouse cursor is on the label
 	bool m_is_left_pressed;		// check the left mouse button is pressed
+	bool m_is_right_pressed;	// check the right mouse button is pressed
 	bool m_is_point_on_lines;
 
 	QImage m_slice;

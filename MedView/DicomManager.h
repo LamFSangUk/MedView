@@ -4,9 +4,9 @@
 #include <QObject>
 #include <QImage>
 
-#include "volume.h"
-#include "axes.h"
-#include "slice.h"
+#include "DataStructure/volume.h"
+#include "DataStructure/axes.h"
+#include "DataStructure/slice.h"
 
 #include "common.h"
 
@@ -17,6 +17,8 @@ public:
 	void readDicom(const char*);
 	std::vector<int> getVoxelInfo(Mode, int, int);
 	inline QSize getStandardSliceSize();
+	float *getVolumeBuffer();
+	std::tuple<int, int, int> getVolumeSize();
 
 	/* Data Structure for sending data to receiver */
 	class SlicePacket {
@@ -36,6 +38,9 @@ public:
 
 	void updateSliceIndex(Mode, int);
 	void updateAngle(Mode, float);
+	void updateWindowing(int, int);
+	void updateAxesCenter(Mode, int, int, int, int);
+	void updateSliceCenter(Mode, int, int);
 
 	const char* getFilename();
 	
@@ -47,7 +52,6 @@ signals:
 	void changeValue();
 
 private slots:
-	void setDegree(Mode, float);
 private:
 	const char* m_filename;
 
@@ -81,6 +85,10 @@ private:
 
 	void _updateSlice();
 
+	/* Windowing */
+	int m_window_width;
+	int m_window_level;
+
 	/* utils */
 	bool _isPointOutOfVolume(Eigen::Vector3f);
 };
@@ -91,6 +99,10 @@ inline QSize DicomManager::getStandardSliceSize() {
 
 inline const char* DicomManager::getFilename() {
 	return m_filename;
+}
+
+inline std::tuple<int, int, int> DicomManager::getVolumeSize() {
+	return std::make_tuple(m_volume->getWidth(), m_volume->getHeight(), m_volume->getDepth());
 }
 
 #endif // __DICOM_MANAGER_H__

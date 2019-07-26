@@ -52,7 +52,7 @@ std::tuple<int, int> Slice::getPositionOfVoxel(float x, float y, float z) {
 		for (int j = 0; j < m_width; j++) {
 			Eigen::Vector4f pos = getVoxelCoord(j, i);
 			if ((int)x == (int)pos(0) && (int)y == (int)pos(1) && (int)z == (int)pos(2)) {
-				std::cout << j << i << std::endl;
+				std::cout << j << " " << i << std::endl;
 				return std::make_tuple(j, i);
 			}
 		}

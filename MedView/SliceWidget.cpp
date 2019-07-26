@@ -91,29 +91,43 @@ void SliceWidget::mouseMoveEvent(QMouseEvent *e) {
 		if (m_is_left_pressed && m_is_point_on_lines) {
 			if (m_prev_cursor_point == e->pos()) return;			// To prevent impossible acos
 
-			// TODO:: Handle this logic that get degree of movement.
 			QPointF center;
 			QLineF(m_line_horizontal).intersect(QLineF(m_line_vertical), &center);	// Find intersection of lines
-			
+
 			qDebug() << "prev" << m_prev_cursor_point;
 
 			QVector2D v_prev(m_prev_cursor_point - center);
-			QVector2D v_cur(e->pos()- center);
-			QVector2D v_dir(e->pos() - m_prev_cursor_point);
+			QVector2D v_cur(e->pos() - center);
 			v_prev.normalize();
 			v_cur.normalize();
-			v_dir.normalize();
 
 			qDebug() << v_prev;
-			qDebug() << QVector2D::dotProduct(v_dir, QVector2D(1, 0));
 			float prev_degree = acos(QVector2D::dotProduct(v_prev, QVector2D(1, 0))) * 180 / M_PI;
 			float cur_degree = acos(QVector2D::dotProduct(v_cur, QVector2D(1, 0))) * 180 / M_PI;
+
+			if (m_prev_cursor_point.y() > center.y()) prev_degree *= -1;
+			if (e->y() > center.y()) cur_degree *= -1;
+
 			float degree = cur_degree - prev_degree;
+			// TODO:: make this more accurate
+			if ((m_prev_cursor_point.y() > center.y() && e->y() <= center.y()) ||
+				m_prev_cursor_point.y() <= center.y() && e->y() > center.y()) {
+				if (degree > 0) {
+					degree = degree - 360;
+				}
+				else {
+					degree = degree + 360;
+				}
+			}
 
 			qDebug() << prev_degree;
 			qDebug() << cur_degree;
 			qDebug() << degree;
 			emit changeDegree(degree);
+		}
+		else if (m_is_right_pressed) {
+			QVector2D delta(e->pos() - m_prev_cursor_point);
+			emit changeWindowing(delta.x(), delta.y());
 		}
 
 		// Default values
@@ -145,6 +159,11 @@ void SliceWidget::mousePressEvent(QMouseEvent *e) {
 			m_is_left_pressed = true;
 			m_is_point_on_lines = _isPointOnLines(e->pos());
 		}
+
+		if (e->buttons() & Qt::RightButton) {
+			qDebug() << "Right mouse pressed";
+			m_is_right_pressed = true;
+		}
 	}
 }
 
@@ -157,7 +176,16 @@ void SliceWidget::mouseReleaseEvent(QMouseEvent *e) {
 			m_is_left_pressed = false;
 			m_is_point_on_lines = false;
 		}
+		if (e->button() == Qt::RightButton) {
+			qDebug() << "Right mouse Released";
+			m_is_right_pressed = false;
+		}
 	}
+}
+
+void SliceWidget::mouseDoubleClickEvent(QMouseEvent *e) {
+	qDebug() << e->pos();
+	emit changeAxesCenter(e->x(), e->y());
 }
 
 void SliceWidget::wheelEvent(QWheelEvent *e) {

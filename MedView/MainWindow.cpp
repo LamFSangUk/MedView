@@ -6,8 +6,6 @@
 #include <QSize>
 #include <QFileDialog>
 
-#include "volume.h"
-
 MainWindow::MainWindow() {
 	this->resize(m_width, m_height);
 
@@ -20,6 +18,10 @@ MainWindow::MainWindow() {
 
 	connect(m_dicom_manager, &DicomManager::changeVolume, [this] {
 		this->setWindowTitle(QString("MedView(")+QString(this->m_dicom_manager->getFilename())+QString(")"));
+
+		//this->m_vr_view = new TestWidget(m_dicom_manager, this);
+		//setCentralWidget(m_vr_view);
+
 	});
 }
 
@@ -40,15 +42,20 @@ void MainWindow::buildLayout() {
 	this->m_sagittal_view = new ImageViewWidget(Mode::MODE_SAGITTAL, this->m_dicom_manager, this);
 	this->m_sagittal_view->setMinimumWidth(512);
 
-	
-
-	QWidget *vrView = new OpenGLWidget();
-	vrView->setMinimumWidth(512);
+	QWindow* vr_view = new OpenGLWidget(m_dicom_manager, 0);
+	vr_view->setMinimumWidth(512);
+	vr_view->setMinimumHeight(512);
+	QWidget* m_vr_view = QWidget::createWindowContainer(vr_view);
+	//m_vr_view->setMaximumWidth(512);
+	//m_vr_view->setMaximumHeight(512);
+	m_vr_view->setFocusPolicy(Qt::TabFocus);
+	m_vr_view->setContentsMargins(0,0,0,0);
+	//this->m_vr_view = new TestWidget(m_dicom_manager, this);
 
 	layout->addWidget(m_axial_view, 0, 0);
 	layout->addWidget(m_coronal_view, 1, 0);
 	layout->addWidget(m_sagittal_view, 0, 1);
-	layout->addWidget(vrView,1,1);
+	layout->addWidget(m_vr_view, 1, 1);
 
 	window->setLayout(layout);
 

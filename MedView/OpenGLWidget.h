@@ -1,33 +1,93 @@
 #ifndef __OPENGLWIDGET__
 #define __OPENGLWIDGET__
 
-#include <QOpenGLWidget>
-#include <QOpenGLFunctions>
+#include <QWindow>
+#include <QOpenGLFunctions_3_3_Core>
 #include <QOpenGLBuffer>
 #include <QOpenGLVertexArrayObject>
+#include <QOpenGLTexture>
+#include <QKeyEvent>
+
+#include "DicomManager.h"
 
 class QOpenGLShaderProgram;
 
-class OpenGLWidget : public QOpenGLWidget, protected QOpenGLFunctions
+class OpenGLWidget : public QWindow, protected QOpenGLFunctions_3_3_Core
 {
 	Q_OBJECT
 public:
-	OpenGLWidget();
+	OpenGLWidget(DicomManager*, QWindow*);
 	//~OpenGLWindow();
 
 	void loadObject();
+	void render();
+
+	void exposeEvent(QExposeEvent *event);
+	void resizeEvent(QResizeEvent *);
 
 protected:
 	void initializeGL();
-	void paintGL() Q_DECL_OVERRIDE;
+	//void paintGL() Q_DECL_OVERRIDE;
 	//void resizeGL(int w, int h) Q_DECL_OVERRIDE;
 
 private:
+	DicomManager *m_dicom_manager;
 
-	QOpenGLBuffer m_vertex;
-	QOpenGLVertexArrayObject m_object;
-	QOpenGLShaderProgram *m_program;
+	QOpenGLContext *m_context;
 
+	GLuint m_vao;
+	QOpenGLShaderProgram *m_raycast_firstpass_shader;
+	QOpenGLShaderProgram *m_raycast_shader;
+
+	//TODO:: rename this
+	bool volumeload = false;
+	bool glInitialized = false;
+
+	void _loadVolume();
+	GLuint m_volume_texture;
+	QOpenGLTexture *m_volume_texture_new;
+
+	void _initializeTargetTexture(int, int);
+	GLuint m_target_texture;
+	void _initializeFramebuffer(int, int);
+	GLuint m_depth_buffer;
+	GLuint m_framebuffer;
+
+	void _renderCube(QOpenGLShaderProgram*, GLuint);
+
+	const GLfloat m_cube_vertices[24] = {
+		// front
+		0.0, 0.0, 1.0,
+		1.0, 0.0, 1.0,
+		1.0, 1.0, 1.0,
+		0.0, 1.0, 1.0,
+		// back
+		0.0, 0.0, 0.0,
+		1.0, 0.0, 0.0,
+		1.0, 1.0, 0.0,
+		0.0, 1.0, 0.0
+	};
+
+	const GLuint m_cube_triangle_indices[36] = {
+		// front
+		0, 1, 2,
+		2, 3, 0,
+		// top
+		1, 5, 6,
+		6, 2, 1,
+		// back
+		7, 6, 5,
+		5, 4, 7,
+		// bottom
+		4, 0, 3,
+		3, 7, 4,
+		// left
+		4, 5, 1,
+		1, 0, 4,
+		// right
+		3, 2, 6,
+		6, 7, 3
+	};
 };
 
 #endif // __OPENGLWINDOW__

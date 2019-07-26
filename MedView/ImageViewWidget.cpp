@@ -35,6 +35,13 @@ ImageViewWidget::ImageViewWidget(Mode mode, DicomManager *dicom_manager,QWidget*
 	connect(m_slice_view, &SliceWidget::changeDegree, [this](float degree) {
 		this->m_dicom_manager->updateAngle(this->m_mode, degree);
 	});
+	connect(m_slice_view, &SliceWidget::changeWindowing, [this](int delta_width, int delta_level) {
+		this->m_dicom_manager->updateWindowing(delta_width, delta_level);
+	});
+	connect(m_slice_view, &SliceWidget::changeAxesCenter, [this](int x, int y) {
+		QSize view_size = this->m_slice_view->getSize();
+		this->m_dicom_manager->updateAxesCenter(this->m_mode, x, y, view_size.width(), view_size.height());
+	});
 
 	connect(m_dicom_manager, &DicomManager::changeSlice, this, &ImageViewWidget::updateView);
 
@@ -68,37 +75,8 @@ void ImageViewWidget::buildLayout() {
 }
 
 void ImageViewWidget::initView() {
-
-	//connect(m_slider, SIGNAL(valueChanged(int)), this, SLOT(setIndex(int)));
-	//connect(this, SIGNAL(changeSliceIdx(int, int)), m_dicom_manager, SLOT(setSliceIdx(int, int)));
-	//connect(m_dicom_manager, SIGNAL(changeAxes()), this, SLOT(setLines()));
-
-	//connect(m_slice_view, SIGNAL(requestIncIndex()), this, SLOT(increaseIndex()));
-	//connect(m_slice_view, SIGNAL(requestDecIndex()), this, SLOT(decreaseIndex()));
-	
-	//connect(m_slice_view, SIGNAL(changeDegree(int,float)), m_dicom_manager, SLOT(setDegree(int, float)));
-
-	
-	
 	m_slider->setEnabled(true);
 	m_slider->setMinimum(0);
-	/*switch (this->m_mode) {
-		case Mode::MODE_AXIAL:
-			m_slider->setMaximum(m_dicom_manager->max_axial_idx);
-			m_slider->setValue(m_dicom_manager->axial_idx);
-			break;
-		case Mode::MODE_CORONAL:
-			m_slider->setMaximum(m_dicom_manager->max_coronal_idx);
-			m_slider->setValue(m_dicom_manager->coronal_idx);
-			break;
-		case Mode::MODE_SAGITTAL:
-			m_slider->setMaximum(m_dicom_manager->max_sagittal_idx);
-			m_slider->setValue(m_dicom_manager->sagittal_idx);
-			break;
-		default:
-			throw std::runtime_error("Not assigned Mode");
-			return;
-	}*/
 }
 
 void ImageViewWidget::draw(Mode mode, QImage* img) {

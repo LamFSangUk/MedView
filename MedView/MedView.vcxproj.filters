@@ -42,13 +42,7 @@
     <ClCompile Include="MainWindow.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="volume.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="CursorCoordinator.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="axes.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="SliceWidget.cpp">
@@ -57,10 +51,16 @@
     <ClCompile Include="DicomManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="slice.cpp">
+    <ClCompile Include="DataStructure\volume.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="voxel.cpp">
+    <ClCompile Include="DataStructure\axes.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="DataStructure\slice.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="DataStructure\voxel.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -78,22 +78,25 @@
     <ClInclude Include="vertex.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="volume.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="resource.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="axes.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="slice.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="voxel.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="common.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="DataStructure\volume.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="DataStructure\axes.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="DataStructure\slice.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="DataStructure\voxel.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="shaders\Shader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -119,5 +122,11 @@
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="MedView.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="shaders\firstpass.vert" />
+    <None Include="shaders\firstpass.frag" />
+    <None Include="shaders\raycast.frag" />
+    <None Include="shaders\raycast.vert" />
   </ItemGroup>
 </Project>

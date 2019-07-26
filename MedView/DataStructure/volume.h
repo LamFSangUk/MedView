@@ -21,6 +21,8 @@ namespace vdcm {
 		int getWidth();
 		int getHeight();
 		int getDepth();
+
+		float* getBuffer();
 	private:
 		std::vector<std::vector<int16_t> > m_volume_data;
 		int m_width;

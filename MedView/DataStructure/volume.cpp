@@ -129,6 +129,21 @@ namespace vdcm {
 		return s;
 	}
 
+	float* Volume::getBuffer() {
+		int size = m_width * m_height * m_depth;
+		float* buffer = new float[size];
+
+		for (int i = 0; i < m_depth; i++) {
+			for (int j = 0; j < m_height; j++) {
+				for (int k = 0; k < m_width; k++) {
+					buffer[i * m_width * m_height + j * m_width + k] = m_volume_data[i][j * m_width + k]/2000.0;
+				}
+			}
+		}
+
+		return buffer;
+	}
+
 	int Volume::getWidth() {
 		return m_width;
 	}

@@ -5,7 +5,6 @@
 #include <QSlider>
 #include <QTextEdit>
 
-#include "volume.h"
 #include "SliceWidget.h"
 #include "DicomManager.h"
 

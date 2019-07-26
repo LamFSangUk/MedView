@@ -55,7 +55,7 @@
     <ClCompile>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <PreprocessorDefinitions>UNICODE;_UNICODE;WIN32;_ENABLE_EXTENDED_ALIGNED_STORAGE;WIN64;QT_DLL;QT_3DCORE_LIB;QT_3DANIMATION_LIB;QT_3DEXTRAS_LIB;QT_3DINPUT_LIB;QT_3DLOGIC_LIB;QT_3DRENDER_LIB;QT_3DQUICK_LIB;QT_3DQUICKANIMATION_LIB;QT_3DQUICKEXTRAS_LIB;QT_3DQUICKINPUT_LIB;QT_3DQUICKRENDER_LIB;QT_3DQUICKSCENE2D_LIB;QT_CORE_LIB;QT_GUI_LIB;QT_OPENGL_LIB;QT_OPENGLEXTENSIONS_LIB;QT_UITOOLS_LIB;QT_WIDGETS_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>D:\AnnotationProject\gdcm\vs_build\Source\Common;D:\AnnotationProject\gdcm\gdcm-3.0.0\Source\Common;D:\AnnotationProject\gdcm\gdcm-3.0.0\Source\DataStructureAndEncodingDefinition;D:\AnnotationProject\gdcm\gdcm-3.0.0\Source\MediaStorageAndFileFormat;D:\AnnotationProject\gdcm\gdcm-3.0.0\Source\InformationObjectDefinition;D:\AnnotationProject\gdcm\gdcm-3.0.0\Source\MessageExchangeDefinition;D:\AnnotationProject\gdcm\gdcm-3.0.0\Source\DataDictionary;D:\AnnotationProject\gdcm\gdcm-3.0.0\Utilities;.\GeneratedFiles;.;$(QTDIR)\include;.\GeneratedFiles\$(ConfigurationName);$(QTDIR)\include\Qt3DCore;$(QTDIR)\include\Qt3DAnimation;$(QTDIR)\include\Qt3DExtras;$(QTDIR)\include\Qt3DInput;$(QTDIR)\include\Qt3DLogic;$(QTDIR)\include\Qt3DRender;$(QTDIR)\include\Qt3DQuick;$(QTDIR)\include\Qt3DQuickAnimation;$(QTDIR)\include\Qt3DQuickExtras;$(QTDIR)\include\Qt3DQuickInput;$(QTDIR)\include\Qt3DQuickRender;$(QTDIR)\include\Qt3DQuickScene2D;$(QTDIR)\include\QtCore;$(QTDIR)\include\QtGui;$(QTDIR)\include\QtANGLE;$(QTDIR)\include\QtOpenGL;$(QTDIR)\include\QtOpenGLExtensions;$(QTDIR)\include\QtUiTools;$(QTDIR)\include\QtWidgets;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\AnnotationProject\MedView\MedView\include;D:\AnnotationProject\gdcm\vs_build\Source\Common;D:\AnnotationProject\gdcm\gdcm-3.0.0\Source\Common;D:\AnnotationProject\gdcm\gdcm-3.0.0\Source\DataStructureAndEncodingDefinition;D:\AnnotationProject\gdcm\gdcm-3.0.0\Source\MediaStorageAndFileFormat;D:\AnnotationProject\gdcm\gdcm-3.0.0\Source\InformationObjectDefinition;D:\AnnotationProject\gdcm\gdcm-3.0.0\Source\MessageExchangeDefinition;D:\AnnotationProject\gdcm\gdcm-3.0.0\Source\DataDictionary;D:\AnnotationProject\gdcm\gdcm-3.0.0\Utilities;.\GeneratedFiles;.;$(QTDIR)\include;.\GeneratedFiles\$(ConfigurationName);$(QTDIR)\include\Qt3DCore;$(QTDIR)\include\Qt3DAnimation;$(QTDIR)\include\Qt3DExtras;$(QTDIR)\include\Qt3DInput;$(QTDIR)\include\Qt3DLogic;$(QTDIR)\include\Qt3DRender;$(QTDIR)\include\Qt3DQuick;$(QTDIR)\include\Qt3DQuickAnimation;$(QTDIR)\include\Qt3DQuickExtras;$(QTDIR)\include\Qt3DQuickInput;$(QTDIR)\include\Qt3DQuickRender;$(QTDIR)\include\Qt3DQuickScene2D;$(QTDIR)\include\QtCore;$(QTDIR)\include\QtGui;$(QTDIR)\include\QtANGLE;$(QTDIR)\include\QtOpenGL;$(QTDIR)\include\QtOpenGLExtensions;$(QTDIR)\include\QtUiTools;$(QTDIR)\include\QtWidgets;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <Optimization>Disabled</Optimization>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
@@ -71,7 +71,7 @@
     <QtMoc>
       <OutputFile>.\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp</OutputFile>
       <ExecutionDescription>Moc'ing %(Identity)...</ExecutionDescription>
-      <IncludePath>D:\AnnotationProject\gdcm\vs_build\Source\Common;D:\AnnotationProject\gdcm\gdcm-3.0.0\Source\Common;D:\AnnotationProject\gdcm\gdcm-3.0.0\Source\DataStructureAndEncodingDefinition;D:\AnnotationProject\gdcm\gdcm-3.0.0\Source\MediaStorageAndFileFormat;D:\AnnotationProject\gdcm\gdcm-3.0.0\Source\InformationObjectDefinition;D:\AnnotationProject\gdcm\gdcm-3.0.0\Source\MessageExchangeDefinition;D:\AnnotationProject\gdcm\gdcm-3.0.0\Source\DataDictionary;D:\AnnotationProject\gdcm\gdcm-3.0.0\Utilities;.\GeneratedFiles;.;$(QTDIR)\include;.\GeneratedFiles\$(ConfigurationName);$(QTDIR)\include\Qt3DCore;$(QTDIR)\include\Qt3DAnimation;$(QTDIR)\include\Qt3DExtras;$(QTDIR)\include\Qt3DInput;$(QTDIR)\include\Qt3DLogic;$(QTDIR)\include\Qt3DRender;$(QTDIR)\include\Qt3DQuick;$(QTDIR)\include\Qt3DQuickAnimation;$(QTDIR)\include\Qt3DQuickExtras;$(QTDIR)\include\Qt3DQuickInput;$(QTDIR)\include\Qt3DQuickRender;$(QTDIR)\include\Qt3DQuickScene2D;$(QTDIR)\include\QtCore;$(QTDIR)\include\QtGui;$(QTDIR)\include\QtANGLE;$(QTDIR)\include\QtOpenGL;$(QTDIR)\include\QtOpenGLExtensions;$(QTDIR)\include\QtUiTools;$(QTDIR)\include\QtWidgets;%(AdditionalIncludeDirectories)</IncludePath>
+      <IncludePath>D:\AnnotationProject\MedView\MedView\include;D:\AnnotationProject\gdcm\vs_build\Source\Common;D:\AnnotationProject\gdcm\gdcm-3.0.0\Source\Common;D:\AnnotationProject\gdcm\gdcm-3.0.0\Source\DataStructureAndEncodingDefinition;D:\AnnotationProject\gdcm\gdcm-3.0.0\Source\MediaStorageAndFileFormat;D:\AnnotationProject\gdcm\gdcm-3.0.0\Source\InformationObjectDefinition;D:\AnnotationProject\gdcm\gdcm-3.0.0\Source\MessageExchangeDefinition;D:\AnnotationProject\gdcm\gdcm-3.0.0\Source\DataDictionary;D:\AnnotationProject\gdcm\gdcm-3.0.0\Utilities;.\GeneratedFiles;.;$(QTDIR)\include;.\GeneratedFiles\$(ConfigurationName);$(QTDIR)\include\Qt3DCore;$(QTDIR)\include\Qt3DAnimation;$(QTDIR)\include\Qt3DExtras;$(QTDIR)\include\Qt3DInput;$(QTDIR)\include\Qt3DLogic;$(QTDIR)\include\Qt3DRender;$(QTDIR)\include\Qt3DQuick;$(QTDIR)\include\Qt3DQuickAnimation;$(QTDIR)\include\Qt3DQuickExtras;$(QTDIR)\include\Qt3DQuickInput;$(QTDIR)\include\Qt3DQuickRender;$(QTDIR)\include\Qt3DQuickScene2D;$(QTDIR)\include\QtCore;$(QTDIR)\include\QtGui;$(QTDIR)\include\QtANGLE;$(QTDIR)\include\QtOpenGL;$(QTDIR)\include\QtOpenGLExtensions;$(QTDIR)\include\QtUiTools;$(QTDIR)\include\QtWidgets;%(AdditionalIncludeDirectories)</IncludePath>
       <Define>UNICODE;_UNICODE;WIN32;_ENABLE_EXTENDED_ALIGNED_STORAGE;WIN64;QT_DLL;QT_3DCORE_LIB;QT_3DANIMATION_LIB;QT_3DEXTRAS_LIB;QT_3DINPUT_LIB;QT_3DLOGIC_LIB;QT_3DRENDER_LIB;QT_3DQUICK_LIB;QT_3DQUICKANIMATION_LIB;QT_3DQUICKEXTRAS_LIB;QT_3DQUICKINPUT_LIB;QT_3DQUICKRENDER_LIB;QT_3DQUICKSCENE2D_LIB;QT_CORE_LIB;QT_GUI_LIB;QT_OPENGL_LIB;QT_OPENGLEXTENSIONS_LIB;QT_UITOOLS_LIB;QT_WIDGETS_LIB;%(PreprocessorDefinitions)</Define>
     </QtMoc>
     <QtUic>
@@ -87,7 +87,7 @@
     <ClCompile>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <PreprocessorDefinitions>UNICODE;_UNICODE;WIN32;_ENABLE_EXTENDED_ALIGNED_STORAGE;WIN64;QT_DLL;QT_NO_DEBUG;NDEBUG;QT_3DCORE_LIB;QT_3DANIMATION_LIB;QT_3DEXTRAS_LIB;QT_3DINPUT_LIB;QT_3DLOGIC_LIB;QT_3DRENDER_LIB;QT_3DQUICK_LIB;QT_3DQUICKANIMATION_LIB;QT_3DQUICKEXTRAS_LIB;QT_3DQUICKINPUT_LIB;QT_3DQUICKRENDER_LIB;QT_3DQUICKSCENE2D_LIB;QT_CORE_LIB;QT_GUI_LIB;QT_OPENGL_LIB;QT_OPENGLEXTENSIONS_LIB;QT_UITOOLS_LIB;QT_WIDGETS_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>D:\AnnotationProject\gdcm\vs_build\Source\Common;D:\AnnotationProject\gdcm\gdcm-3.0.0\Source\Common;D:\AnnotationProject\gdcm\gdcm-3.0.0\Source\DataStructureAndEncodingDefinition;D:\AnnotationProject\gdcm\gdcm-3.0.0\Source\MediaStorageAndFileFormat;D:\AnnotationProject\gdcm\gdcm-3.0.0\Source\InformationObjectDefinition;D:\AnnotationProject\gdcm\gdcm-3.0.0\Source\MessageExchangeDefinition;D:\AnnotationProject\gdcm\gdcm-3.0.0\Source\DataDictionary;D:\AnnotationProject\gdcm\gdcm-3.0.0\Utilities;.\GeneratedFiles;.;$(QTDIR)\include;.\GeneratedFiles\$(ConfigurationName);$(QTDIR)\include\Qt3DCore;$(QTDIR)\include\Qt3DAnimation;$(QTDIR)\include\Qt3DExtras;$(QTDIR)\include\Qt3DInput;$(QTDIR)\include\Qt3DLogic;$(QTDIR)\include\Qt3DRender;$(QTDIR)\include\Qt3DQuick;$(QTDIR)\include\Qt3DQuickAnimation;$(QTDIR)\include\Qt3DQuickExtras;$(QTDIR)\include\Qt3DQuickInput;$(QTDIR)\include\Qt3DQuickRender;$(QTDIR)\include\Qt3DQuickScene2D;$(QTDIR)\include\QtCore;$(QTDIR)\include\QtGui;$(QTDIR)\include\QtANGLE;$(QTDIR)\include\QtOpenGL;$(QTDIR)\include\QtOpenGLExtensions;$(QTDIR)\include\QtUiTools;$(QTDIR)\include\QtWidgets;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\AnnotationProject\MedView\MedView\include;D:\AnnotationProject\gdcm\vs_build\Source\Common;D:\AnnotationProject\gdcm\gdcm-3.0.0\Source\Common;D:\AnnotationProject\gdcm\gdcm-3.0.0\Source\DataStructureAndEncodingDefinition;D:\AnnotationProject\gdcm\gdcm-3.0.0\Source\MediaStorageAndFileFormat;D:\AnnotationProject\gdcm\gdcm-3.0.0\Source\InformationObjectDefinition;D:\AnnotationProject\gdcm\gdcm-3.0.0\Source\MessageExchangeDefinition;D:\AnnotationProject\gdcm\gdcm-3.0.0\Source\DataDictionary;D:\AnnotationProject\gdcm\gdcm-3.0.0\Utilities;.\GeneratedFiles;.;$(QTDIR)\include;.\GeneratedFiles\$(ConfigurationName);$(QTDIR)\include\Qt3DCore;$(QTDIR)\include\Qt3DAnimation;$(QTDIR)\include\Qt3DExtras;$(QTDIR)\include\Qt3DInput;$(QTDIR)\include\Qt3DLogic;$(QTDIR)\include\Qt3DRender;$(QTDIR)\include\Qt3DQuick;$(QTDIR)\include\Qt3DQuickAnimation;$(QTDIR)\include\Qt3DQuickExtras;$(QTDIR)\include\Qt3DQuickInput;$(QTDIR)\include\Qt3DQuickRender;$(QTDIR)\include\Qt3DQuickScene2D;$(QTDIR)\include\QtCore;$(QTDIR)\include\QtGui;$(QTDIR)\include\QtANGLE;$(QTDIR)\include\QtOpenGL;$(QTDIR)\include\QtOpenGLExtensions;$(QTDIR)\include\QtUiTools;$(QTDIR)\include\QtWidgets;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DebugInformationFormat />
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
@@ -102,7 +102,7 @@
     <QtMoc>
       <OutputFile>.\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp</OutputFile>
       <ExecutionDescription>Moc'ing %(Identity)...</ExecutionDescription>
-      <IncludePath>D:\AnnotationProject\gdcm\vs_build\Source\Common;D:\AnnotationProject\gdcm\gdcm-3.0.0\Source\Common;D:\AnnotationProject\gdcm\gdcm-3.0.0\Source\DataStructureAndEncodingDefinition;D:\AnnotationProject\gdcm\gdcm-3.0.0\Source\MediaStorageAndFileFormat;D:\AnnotationProject\gdcm\gdcm-3.0.0\Source\InformationObjectDefinition;D:\AnnotationProject\gdcm\gdcm-3.0.0\Source\MessageExchangeDefinition;D:\AnnotationProject\gdcm\gdcm-3.0.0\Source\DataDictionary;D:\AnnotationProject\gdcm\gdcm-3.0.0\Utilities;.\GeneratedFiles;.;$(QTDIR)\include;.\GeneratedFiles\$(ConfigurationName);$(QTDIR)\include\Qt3DCore;$(QTDIR)\include\Qt3DAnimation;$(QTDIR)\include\Qt3DExtras;$(QTDIR)\include\Qt3DInput;$(QTDIR)\include\Qt3DLogic;$(QTDIR)\include\Qt3DRender;$(QTDIR)\include\Qt3DQuick;$(QTDIR)\include\Qt3DQuickAnimation;$(QTDIR)\include\Qt3DQuickExtras;$(QTDIR)\include\Qt3DQuickInput;$(QTDIR)\include\Qt3DQuickRender;$(QTDIR)\include\Qt3DQuickScene2D;$(QTDIR)\include\QtCore;$(QTDIR)\include\QtGui;$(QTDIR)\include\QtANGLE;$(QTDIR)\include\QtOpenGL;$(QTDIR)\include\QtOpenGLExtensions;$(QTDIR)\include\QtUiTools;$(QTDIR)\include\QtWidgets;%(AdditionalIncludeDirectories)</IncludePath>
+      <IncludePath>D:\AnnotationProject\MedView\MedView\include;D:\AnnotationProject\gdcm\vs_build\Source\Common;D:\AnnotationProject\gdcm\gdcm-3.0.0\Source\Common;D:\AnnotationProject\gdcm\gdcm-3.0.0\Source\DataStructureAndEncodingDefinition;D:\AnnotationProject\gdcm\gdcm-3.0.0\Source\MediaStorageAndFileFormat;D:\AnnotationProject\gdcm\gdcm-3.0.0\Source\InformationObjectDefinition;D:\AnnotationProject\gdcm\gdcm-3.0.0\Source\MessageExchangeDefinition;D:\AnnotationProject\gdcm\gdcm-3.0.0\Source\DataDictionary;D:\AnnotationProject\gdcm\gdcm-3.0.0\Utilities;.\GeneratedFiles;.;$(QTDIR)\include;.\GeneratedFiles\$(ConfigurationName);$(QTDIR)\include\Qt3DCore;$(QTDIR)\include\Qt3DAnimation;$(QTDIR)\include\Qt3DExtras;$(QTDIR)\include\Qt3DInput;$(QTDIR)\include\Qt3DLogic;$(QTDIR)\include\Qt3DRender;$(QTDIR)\include\Qt3DQuick;$(QTDIR)\include\Qt3DQuickAnimation;$(QTDIR)\include\Qt3DQuickExtras;$(QTDIR)\include\Qt3DQuickInput;$(QTDIR)\include\Qt3DQuickRender;$(QTDIR)\include\Qt3DQuickScene2D;$(QTDIR)\include\QtCore;$(QTDIR)\include\QtGui;$(QTDIR)\include\QtANGLE;$(QTDIR)\include\QtOpenGL;$(QTDIR)\include\QtOpenGLExtensions;$(QTDIR)\include\QtUiTools;$(QTDIR)\include\QtWidgets;%(AdditionalIncludeDirectories)</IncludePath>
       <Define>UNICODE;_UNICODE;WIN32;_ENABLE_EXTENDED_ALIGNED_STORAGE;WIN64;QT_DLL;QT_NO_DEBUG;NDEBUG;QT_3DCORE_LIB;QT_3DANIMATION_LIB;QT_3DEXTRAS_LIB;QT_3DINPUT_LIB;QT_3DLOGIC_LIB;QT_3DRENDER_LIB;QT_3DQUICK_LIB;QT_3DQUICKANIMATION_LIB;QT_3DQUICKEXTRAS_LIB;QT_3DQUICKINPUT_LIB;QT_3DQUICKRENDER_LIB;QT_3DQUICKSCENE2D_LIB;QT_CORE_LIB;QT_GUI_LIB;QT_OPENGL_LIB;QT_OPENGLEXTENSIONS_LIB;QT_UITOOLS_LIB;QT_WIDGETS_LIB;%(PreprocessorDefinitions)</Define>
     </QtMoc>
     <QtUic>
@@ -115,7 +115,7 @@
     </QtRcc>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="axes.cpp" />
+    <ClCompile Include="DataStructure\axes.cpp" />
     <ClCompile Include="CursorCoordinator.cpp" />
     <ClCompile Include="DicomManager.cpp" />
     <ClCompile Include="ImageViewWidget.cpp" />
@@ -123,16 +123,16 @@
     <ClCompile Include="MainWindow.cpp" />
     <ClCompile Include="OpenGLWidget.cpp" />
     <ClCompile Include="SliceWidget.cpp" />
-    <ClCompile Include="volume.cpp">
+    <ClCompile Include="DataStructure\volume.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="slice.cpp" />
-    <ClCompile Include="voxel.cpp" />
-    <ClInclude Include="axes.h">
+    <ClCompile Include="DataStructure\slice.cpp" />
+    <ClCompile Include="DataStructure\voxel.cpp" />
+    <ClInclude Include="DataStructure\axes.h">
       <FileType>CppHeader</FileType>
     </ClInclude>
     <ClInclude Include="common.h" />
-    <ClInclude Include="voxel.h" />
+    <ClInclude Include="DataStructure\voxel.h" />
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="OpenGLWidget.h" />
@@ -165,14 +165,29 @@
       <IncludePath Condition="'$(Configuration)|$(Platform)'=='Release|x64'">.\GeneratedFiles;.;$(QTDIR)\include;.\GeneratedFiles\$(ConfigurationName);$(QTDIR)\include\Qt3DCore;$(QTDIR)\include\Qt3DAnimation;$(QTDIR)\include\Qt3DExtras;$(QTDIR)\include\Qt3DInput;$(QTDIR)\include\Qt3DLogic;$(QTDIR)\include\Qt3DRender;$(QTDIR)\include\Qt3DQuick;$(QTDIR)\include\Qt3DQuickAnimation;$(QTDIR)\include\Qt3DQuickExtras;$(QTDIR)\include\Qt3DQuickInput;$(QTDIR)\include\Qt3DQuickRender;$(QTDIR)\include\Qt3DQuickScene2D;$(QTDIR)\include\QtCore;$(QTDIR)\include\QtGui;$(QTDIR)\include\QtANGLE;$(QTDIR)\include\QtOpenGL;$(QTDIR)\include\QtOpenGLExtensions;$(QTDIR)\include\QtUiTools;$(QTDIR)\include\QtWidgets</IncludePath>
     </QtMoc>
     <ClInclude Include="resource.h" />
-    <ClInclude Include="slice.h" />
+    <ClInclude Include="DataStructure\slice.h" />
+    <ClInclude Include="shaders\Shader.h" />
     <ClInclude Include="vertex.h" />
-    <ClInclude Include="volume.h">
+    <ClInclude Include="DataStructure\volume.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="MedView.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="shaders\firstpass.frag">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </None>
+    <None Include="shaders\firstpass.vert">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </None>
+    <None Include="shaders\raycast.frag">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </None>
+    <None Include="shaders\raycast.vert">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </None>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Condition="Exists('$(QtMsBuild)\qt.targets')">
