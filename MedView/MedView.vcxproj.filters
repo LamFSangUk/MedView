@@ -63,6 +63,9 @@
     <ClCompile Include="DataStructure\voxel.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="ArcBall.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <QtUic Include="MedView.ui">
@@ -75,9 +78,6 @@
     </QtRcc>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="vertex.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="resource.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -96,7 +96,7 @@
     <ClInclude Include="DataStructure\voxel.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="shaders\Shader.h">
+    <ClInclude Include="ArcBall.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

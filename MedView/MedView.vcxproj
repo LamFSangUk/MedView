@@ -115,6 +115,7 @@
     </QtRcc>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="ArcBall.cpp" />
     <ClCompile Include="DataStructure\axes.cpp" />
     <ClCompile Include="CursorCoordinator.cpp" />
     <ClCompile Include="DicomManager.cpp" />
@@ -128,6 +129,7 @@
     </ClCompile>
     <ClCompile Include="DataStructure\slice.cpp" />
     <ClCompile Include="DataStructure\voxel.cpp" />
+    <ClInclude Include="ArcBall.h" />
     <ClInclude Include="DataStructure\axes.h">
       <FileType>CppHeader</FileType>
     </ClInclude>
@@ -166,8 +168,6 @@
     </QtMoc>
     <ClInclude Include="resource.h" />
     <ClInclude Include="DataStructure\slice.h" />
-    <ClInclude Include="shaders\Shader.h" />
-    <ClInclude Include="vertex.h" />
     <ClInclude Include="DataStructure\volume.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
     </ClInclude>

@@ -7,8 +7,11 @@
 #include <QOpenGLVertexArrayObject>
 #include <QOpenGLTexture>
 #include <QKeyEvent>
+#include<QMatrix4x4>
+#include<QQuaternion>
 
 #include "DicomManager.h"
+#include "ArcBall.h"
 
 class QOpenGLShaderProgram;
 
@@ -19,6 +22,8 @@ public:
 	OpenGLWidget(DicomManager*, QWindow*);
 	//~OpenGLWindow();
 
+	void reset();
+
 	void loadObject();
 	void render();
 
@@ -27,8 +32,10 @@ public:
 
 protected:
 	void initializeGL();
-	//void paintGL() Q_DECL_OVERRIDE;
-	//void resizeGL(int w, int h) Q_DECL_OVERRIDE;
+
+	void mouseMoveEvent(QMouseEvent *) override;
+	void mousePressEvent(QMouseEvent*) override;
+	void mouseReleaseEvent(QMouseEvent*) override;
 
 private:
 	DicomManager *m_dicom_manager;
@@ -54,6 +61,16 @@ private:
 	GLuint m_framebuffer;
 
 	void _renderCube(QOpenGLShaderProgram*, GLuint);
+
+	QMatrix4x4 m_model_mat;
+	QMatrix4x4 m_view_mat;
+	void _initializeMatrix();
+
+	ArcBall* arc;
+
+	/* Mouse cursor status */
+	bool m_is_right_pressed;
+	QPoint m_prev_point;
 
 	const GLfloat m_cube_vertices[24] = {
 		// front

@@ -33,8 +33,6 @@ void main()
 
 	vec3 pos = start_pos;
 
-	//pos = pos + ray_delta * rand();
-
 	float max_intensity = 0;
 	float intensity;
 
@@ -48,18 +46,7 @@ void main()
 		if(intensity > max_intensity){
 			max_intensity = intensity;
 		}
-
-		//max_intensity = i;
-
-		//out_color = composite_mip(color, out_color);
-
-		//if (out_color.a > 0.95) {
-        //    break;
-       // }
 	}
 
-	out_color = vec4(max_intensity, 0.0, 0.0 ,1.0);
-	//out_color = vec4(start_pos, 1.0);
-	//out_color = intensity;
-	
+	out_color = vec4(vec3(max_intensity) ,1.0);
 }

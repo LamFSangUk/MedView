@@ -18,10 +18,6 @@ MainWindow::MainWindow() {
 
 	connect(m_dicom_manager, &DicomManager::changeVolume, [this] {
 		this->setWindowTitle(QString("MedView(")+QString(this->m_dicom_manager->getFilename())+QString(")"));
-
-		//this->m_vr_view = new TestWidget(m_dicom_manager, this);
-		//setCentralWidget(m_vr_view);
-
 	});
 }
 
@@ -50,7 +46,6 @@ void MainWindow::buildLayout() {
 	//m_vr_view->setMaximumHeight(512);
 	m_vr_view->setFocusPolicy(Qt::TabFocus);
 	m_vr_view->setContentsMargins(0,0,0,0);
-	//this->m_vr_view = new TestWidget(m_dicom_manager, this);
 
 	layout->addWidget(m_axial_view, 0, 0);
 	layout->addWidget(m_coronal_view, 1, 0);

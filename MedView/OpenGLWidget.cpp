@@ -3,7 +3,6 @@
 
 #include <QPainter>
 
-#include "vertex.h"
 #include <iostream>
 
 OpenGLWidget::OpenGLWidget(DicomManager *dicom_manager, QWindow* parent = 0)
@@ -23,19 +22,24 @@ OpenGLWidget::OpenGLWidget(DicomManager *dicom_manager, QWindow* parent = 0)
 	initializeGL();
 
 	connect(m_dicom_manager, &DicomManager::changeVolume, [this] {
-		qDebug() << "Called";
 		this->loadObject();
 		this->render();
 	});
 
-	qDebug("create");
+	m_is_right_pressed = false;
+	// Create ArcBall
+	QSize size = this->size();
+	arc = new ArcBall(size.width(), size.height());
+
+	
 }
 
 void OpenGLWidget::initializeGL() {
-	qDebug("init");
+	qDebug("Initialze gl");
 	m_context->makeCurrent(this);
 	initializeOpenGLFunctions();
 
+	/* OpenGL information */
 	printf("Renderer: %s\n", glGetString(GL_RENDERER));
 	printf("OpenGL version: %s\n", glGetString(GL_VERSION));
 
@@ -76,7 +80,29 @@ void OpenGLWidget::initializeGL() {
 	_initializeTargetTexture(size.width(), size.height());
 	_initializeFramebuffer(size.width(), size.height());
 
+	_initializeMatrix();
+
 	glInitialized = true;
+}
+
+/**
+ * Reset all matrix and re-rendering
+ */
+void OpenGLWidget::reset() {
+	_initializeMatrix();
+	render();
+}
+
+void OpenGLWidget::_initializeMatrix() {
+
+	m_model_mat.rotate(90.0, 1.0, 0.0, 0.0);
+	m_model_mat.rotate(180.0, 0.0, 0.0, 1.0);
+	m_model_mat.translate(-0.5, -0.5, -0.5);
+
+	m_view_mat.lookAt(
+		QVector3D(0.0, 0.0, 1.0),
+		QVector3D(0.0, 0.0, 0.0),
+		QVector3D(0.0, 1.0, 0.0));
 }
 
 void OpenGLWidget::loadObject() {
@@ -85,7 +111,6 @@ void OpenGLWidget::loadObject() {
 	_loadVolume();
 
 	volumeload = true;
-
 }
 
 void OpenGLWidget::_loadVolume() {
@@ -123,7 +148,7 @@ void OpenGLWidget::render()
 	m_context->makeCurrent(this);
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
+	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
 	if (volumeload) {
 		QSize size = this->size();
@@ -144,7 +169,6 @@ void OpenGLWidget::render()
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		
 		/* Second Pass */
-		
 		// volume data
 		m_raycast_shader->bind();
 		glViewport(0, 0, size.width(), size.height());
@@ -162,9 +186,6 @@ void OpenGLWidget::render()
 		glEnable(GL_TEXTURE_3D);
 		glBindTexture(GL_TEXTURE_3D, m_volume_texture);
 		glUniform1i(glGetUniformLocation(m_raycast_shader->programId(), "voltex"), 1);
-		
-		//m_volume_texture_new->bind(2);
-		//m_raycast_shader->setUniformValue("volume", 2);
 
 		glUniform1f(glGetUniformLocation(m_raycast_shader->programId(), "screen_width"), (GLfloat) this->size().width());
 		glUniform1f(glGetUniformLocation(m_raycast_shader->programId(), "screen_height"), (GLfloat) this->size().height());
@@ -172,7 +193,6 @@ void OpenGLWidget::render()
 		_renderCube(m_raycast_shader, GL_BACK);
 
 		m_raycast_shader->release();
-		//m_volume_texture_new->release();
 	}
 
 	m_context->swapBuffers(this);
@@ -180,20 +200,13 @@ void OpenGLWidget::render()
 
 void OpenGLWidget::_renderCube(QOpenGLShaderProgram* shader, GLuint cull_face) {
 	glEnable(GL_DEPTH_TEST);
-	glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
+	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-	QMatrix4x4 model;
-	model.translate(-0.5, -0.5, -0.5);
-	QMatrix4x4 view;
-	view.lookAt(
-		QVector3D(-1.0, 1.0, 1.8),
-		QVector3D(0.0, 0.0, 0.0),
-		QVector3D(0.0, 1.0, 0.0));
+	
 	QMatrix4x4 proj;
-	proj.perspective(60.0, 1, 0.1f, 100.0f);
-	//proj.ortho(-1.0f, 1.0f, -1.0f, 1.0f, 0.1f, 100.0f);
-	QMatrix4x4 mvp = proj * view * model;
+	//proj.perspective(60.0, 1.0, 0.1f, 100.0f);
+	proj.ortho(-0.7f, 0.7f, -0.7f, 0.7f, 0.1f, 100.0f);
+	QMatrix4x4 mvp = proj * m_view_mat * m_model_mat;
 	glUniformMatrix4fv(glGetUniformLocation(shader->programId(), "mvp"), 1, GL_FALSE, mvp.constData());
 
 	glEnable(GL_CULL_FACE);
@@ -233,8 +246,6 @@ void OpenGLWidget::_initializeFramebuffer(int width, int height) {
 
 	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, m_depth_buffer);
 
-	glEnable(GL_DEPTH_TEST);
-
 	glBindFramebuffer(GL_FRAMEBUFFER, 0); // release
 }
 
@@ -248,12 +259,45 @@ void OpenGLWidget::exposeEvent(QExposeEvent *e) {
 }
 void OpenGLWidget::resizeEvent(QResizeEvent *e) {
 	QSize size = e->size();
-	qDebug() << "GL Resized" << e->size();
 	
 	if (glInitialized) {
-		qDebug() << "GLINIT";
-		// target texture and framebuffer object
+		// Resize target texture and framebuffer object
 		_initializeTargetTexture(size.width(), size.height());
 		_initializeFramebuffer(size.width(), size.height());
+
+		// Resize Arcball
+		arc->setBounds(size.width(), size.height());
+	}
+}
+
+void OpenGLWidget::mouseMoveEvent(QMouseEvent* e) {
+	QPoint cur_point = e->pos();
+
+	if (m_is_right_pressed) {
+		float* raw_rotation_mat = arc->getRotationMatrix(cur_point.x(), cur_point.y());
+		QMatrix4x4 rotation_mat = QMatrix4x4(raw_rotation_mat);
+		m_view_mat =  m_view_mat * rotation_mat;
+
+		delete(raw_rotation_mat);
+
+		render();
+	}
+
+	m_prev_point = cur_point;
+}
+
+void OpenGLWidget::mousePressEvent(QMouseEvent* e) {
+	if (e->buttons() & Qt::RightButton) {
+		qDebug() << "Right mouse pressed";
+		m_is_right_pressed = true;
+
+		arc->setStart(e->pos().x(), e->pos().y());
+	}
+}
+
+void OpenGLWidget::mouseReleaseEvent(QMouseEvent* e) {
+	if (e->button() == Qt::RightButton) {
+		qDebug() << "Right mouse Released";
+		m_is_right_pressed = false;
 	}
 }

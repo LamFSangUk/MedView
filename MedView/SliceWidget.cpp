@@ -16,6 +16,8 @@ SliceWidget::SliceWidget(QWidget* parent=NULL)
 	m_is_cursor_on = false;
 	m_is_slice_loaded = false;
 	m_is_left_pressed = false;
+	m_is_right_pressed = false;
+	m_is_point_on_lines = false;
 
 	// Set default background color
 	this->setStyleSheet("QLabel { background-color : black; }");
