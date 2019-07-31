@@ -95,14 +95,16 @@ void OpenGLWidget::reset() {
 
 void OpenGLWidget::_initializeMatrix() {
 
-	m_model_mat.rotate(90.0, 1.0, 0.0, 0.0);
 	m_model_mat.rotate(180.0, 0.0, 0.0, 1.0);
+	m_model_mat.rotate(-90.0, 1.0, 0.0, 0.0);
+
 	m_model_mat.translate(-0.5, -0.5, -0.5);
 
 	m_view_mat.lookAt(
 		QVector3D(0.0, 0.0, 1.0),
 		QVector3D(0.0, 0.0, 0.0),
 		QVector3D(0.0, 1.0, 0.0));
+
 }
 
 void OpenGLWidget::loadObject() {
@@ -206,7 +208,8 @@ void OpenGLWidget::_renderCube(QOpenGLShaderProgram* shader, GLuint cull_face) {
 	QMatrix4x4 proj;
 	//proj.perspective(60.0, 1.0, 0.1f, 100.0f);
 	proj.ortho(-0.7f, 0.7f, -0.7f, 0.7f, 0.1f, 100.0f);
-	QMatrix4x4 mvp = proj * m_view_mat * m_model_mat;
+	QMatrix4x4 rotated_view = m_view_mat * QMatrix4x4(arc->getRotationMatrix());
+	QMatrix4x4 mvp = proj * rotated_view * m_model_mat;
 	glUniformMatrix4fv(glGetUniformLocation(shader->programId(), "mvp"), 1, GL_FALSE, mvp.constData());
 
 	glEnable(GL_CULL_FACE);
@@ -274,11 +277,7 @@ void OpenGLWidget::mouseMoveEvent(QMouseEvent* e) {
 	QPoint cur_point = e->pos();
 
 	if (m_is_right_pressed) {
-		float* raw_rotation_mat = arc->getRotationMatrix(cur_point.x(), cur_point.y());
-		QMatrix4x4 rotation_mat = QMatrix4x4(raw_rotation_mat);
-		m_view_mat =  m_view_mat * rotation_mat;
-
-		delete(raw_rotation_mat);
+		arc->rotate(e->pos().x(), e->pos().y());
 
 		render();
 	}
@@ -292,6 +291,7 @@ void OpenGLWidget::mousePressEvent(QMouseEvent* e) {
 		m_is_right_pressed = true;
 
 		arc->setStart(e->pos().x(), e->pos().y());
+		temp = m_view_mat;
 	}
 }
 

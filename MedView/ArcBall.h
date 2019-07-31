@@ -18,12 +18,21 @@ public:
 
 	void setBounds(int, int);
 	void setStart(int, int);
-	float* getRotationMatrix(int, int);
+	float* getRotationMatrix();
+	void rotate(int, int);
+
 private:
 	int m_window_width;
 	int m_window_height;
 
-	SpehreCoord m_start;
+	/* Arcball sphere info */
+	Eigen::Vector3f m_origin;
+	float m_radius;
+
+	Eigen::Quaternion<float> m_quat_anchor;
+	Eigen::Quaternion<float> m_quat_now;
+
+	SpehreCoord m_anchor;
 
 	SphereCoord _toSphereCoord(ScreenCoord);
 };

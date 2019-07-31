@@ -72,6 +72,9 @@ namespace vdcm {
 			std::vector<int16_t> slice(buffer, buffer + length/2);
 
 			volume->m_volume_data.push_back(slice);
+
+			delete temp_buffer;
+			delete buffer;
 		}
 
 		return volume;
@@ -133,10 +136,23 @@ namespace vdcm {
 		int size = m_width * m_height * m_depth;
 		float* buffer = new float[size];
 
+		float min = INT16_MAX;
+		float max = INT16_MIN;
+
 		for (int i = 0; i < m_depth; i++) {
 			for (int j = 0; j < m_height; j++) {
 				for (int k = 0; k < m_width; k++) {
-					buffer[i * m_width * m_height + j * m_width + k] = m_volume_data[i][j * m_width + k]/2000.0;
+					float val = m_volume_data[i][j * m_width + k];
+					if (val > max) max = val;
+					if (val < min) min = val;
+				}
+			}
+		}
+
+		for (int i = 0; i < m_depth; i++) {
+			for (int j = 0; j < m_height; j++) {
+				for (int k = 0; k < m_width; k++) {
+					buffer[i * m_width * m_height + j * m_width + k] = (m_volume_data[i][j * m_width + k] - min)/(max-min);
 				}
 			}
 		}

@@ -405,31 +405,28 @@ void DicomManager::_updateSlice() {
 	qDebug() << "Updated Varaibles";
 
 	// Axial plane
-	/*if (m_axial_slice) {
-		qDebug() << "here";
+	if (m_axial_slice) {
 		delete m_axial_slice;
 		m_axial_slice = nullptr;
-	}*/
+	}
 	m_axial_slice = m_volume->getSlice(Mode::MODE_AXIAL, m_axes,
 		m_standard_slice_size.width(), m_standard_slice_size.height(), m_axial_center);
 	std::vector<QLine> axial_lines = getAxesLines(Mode::MODE_AXIAL, m_standard_slice_size.width(), m_standard_slice_size.height());
 
 	// Coronal plane
-	/*if (m_coronal_slice) {
-		qDebug() << "3here";
+	if (m_coronal_slice) {
 		delete m_coronal_slice;
 		m_coronal_slice = nullptr;
-	}*/
+	}
 	m_coronal_slice = m_volume->getSlice(Mode::MODE_CORONAL, m_axes,
 		m_standard_slice_size.width(), m_standard_slice_size.height(), m_coronal_center);
 	std::vector<QLine> coronal_lines = getAxesLines(Mode::MODE_CORONAL, m_standard_slice_size.width(), m_standard_slice_size.height());
 
 	// Sagittal plane
-	/*if (m_sagittal_slice) {
-		qDebug() << "there";
+	if (m_sagittal_slice) {
 		delete m_sagittal_slice;
 		m_sagittal_slice = nullptr;
-	}*/
+	}
 	m_sagittal_slice = m_volume->getSlice(Mode::MODE_SAGITTAL, m_axes,
 		m_standard_slice_size.width(), m_standard_slice_size.height(), m_sagittal_center);
 	std::vector<QLine> sagittal_lines = getAxesLines(Mode::MODE_SAGITTAL, m_standard_slice_size.width(), m_standard_slice_size.height());
@@ -455,8 +452,6 @@ void DicomManager::_updateSlice() {
 	packet.slice = _convertSliceToImage(m_coronal_slice);
 	plane_center = m_coronal_slice->getPositionOfVoxel(center(0), center(1), center(2));
 	packet.line_center = QPoint(std::get<0>(plane_center), std::get<1>(plane_center));
-	qDebug() << "Done THere";
-
 	packet.angle = m_axes->getAngle(Mode::MODE_CORONAL);
 	packets.insert(std::pair<Mode, SlicePacket>(Mode::MODE_CORONAL, packet));
 

@@ -15,6 +15,7 @@ public:
 	Slice(int, int, float, float);
 	Slice(const Slice&);
 	Slice& operator=(const Slice&);
+	~Slice();
 
 	void refTransform(Mode, Eigen::Vector4d, Eigen::Vector3f, float, float, float);
 	void refResize(int, int);

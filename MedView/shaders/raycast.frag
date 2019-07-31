@@ -11,6 +11,13 @@ uniform sampler3D voltex;
 uniform float screen_width;
 uniform float screen_height;
 
+vec4 colour_transfer(float intensity){
+	vec3 high = vec3(1.0);
+	vec3 low = vec3(0.0);
+	float alpha = (exp(intensity) - 1.0)/(exp(1.0) - 1.0);
+	return vec4(intensity*high+(1.0-intensity)*low,alpha);
+}
+
 void main()
 {
 	// const for ray-cast
@@ -42,11 +49,30 @@ void main()
 		// Sample intensity from volume data
 		intensity = texture(voltex, pos).r;
 
+		vec4 color = colour_transfer(intensity);
+
 		// Maximum Intensity Projection
 		if(intensity > max_intensity){
 			max_intensity = intensity;
 		}
+
+		
+		//out_color.rgb = color.a *color.rgb + (1.0 -color.a) *out_color.a*out_color.rgb;
+		//out_color.a = color.a + (1.0 - color.a) * out_color.a;
+
+		//if(out_color.a >= 1.0){
+		//	out_color.a =1.0;
+		//	break;
+		//}
 	}
 
-	out_color = vec4(vec3(max_intensity) ,1.0);
+	out_color = vec4(vec3(max_intensity), 1.0);
+
+	// Blend background
+    //out_color.rgb = out_color.a * out_color.rgb + (1 - out_color.a) * pow(vec3(0.0), vec3(2.2)).rgb;
+    //out_color.a = 1.0;
+
+    // Gamma correction
+    //out_color.rgb = pow(out_color.rgb, vec3(1.0 / 2.2));
+    //out_color.a = out_color.a;
 }

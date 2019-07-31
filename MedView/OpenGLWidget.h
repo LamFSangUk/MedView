@@ -64,6 +64,8 @@ private:
 
 	QMatrix4x4 m_model_mat;
 	QMatrix4x4 m_view_mat;
+	QMatrix4x4 m_rotation_mat;
+	QMatrix4x4 temp;
 	void _initializeMatrix();
 
 	ArcBall* arc;

@@ -47,6 +47,10 @@ Slice& Slice::operator=(const Slice& s) {
 	return *this; 
 }
 
+Slice::~Slice() {
+
+}
+
 std::tuple<int, int> Slice::getPositionOfVoxel(float x, float y, float z) {
 	for (int i = 0; i < m_height; i++) {
 		for (int j = 0; j < m_width; j++) {
@@ -57,6 +61,7 @@ std::tuple<int, int> Slice::getPositionOfVoxel(float x, float y, float z) {
 			}
 		}
 	}
+	std::cout << "Error!" << std::endl;
 }
 
 
