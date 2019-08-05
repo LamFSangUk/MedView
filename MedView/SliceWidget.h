@@ -35,12 +35,14 @@ signals:
 	void requestDecIndex();
 	void changeWindowing(int, int);
 	void changeAxesCenter(int, int);
+
 private:
 	bool m_is_slice_loaded;		// check the slice to show is loaded
 	bool m_is_cursor_on;		// check the mouse cursor is on the label
 	bool m_is_left_pressed;		// check the left mouse button is pressed
 	bool m_is_right_pressed;	// check the right mouse button is pressed
-	bool m_is_point_on_lines;
+	bool m_is_point_on_lines;	// check the cursor is on lines
+	bool m_is_point_inside_circle;
 
 	QImage m_slice;
 	CursorCoordinator* m_cur_coord;
@@ -49,12 +51,16 @@ private:
 	QLine m_line_vertical;
 	QColor m_color_line_horizontal;
 	QColor m_color_line_vertical;
+	QPointF m_line_meet;		// The meet point of two lines
+
+	const int m_circle_radius = 10;	// radius of circle which is on meet of lines
 
 	QSize m_size;
 
 	QPoint m_prev_cursor_point;
 
 	bool _isPointOnLines(QPoint);
+	bool _isPointInsideCircle(QPoint);
 	bool _isPointNearPoint(QPointF, QPointF, int);
 };
 

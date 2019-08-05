@@ -36,9 +36,6 @@
     <ClCompile Include="ImageViewWidget.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="OpenGLWidget.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="MainWindow.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -63,7 +60,13 @@
     <ClCompile Include="DataStructure\voxel.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ArcBall.cpp">
+    <ClCompile Include="Utils\ArcBall.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="VolumeViewWidget.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="OpenGLWindow.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -96,14 +99,11 @@
     <ClInclude Include="DataStructure\voxel.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ArcBall.h">
+    <ClInclude Include="Utils\ArcBall.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <QtMoc Include="OpenGLWidget.h">
-      <Filter>Header Files</Filter>
-    </QtMoc>
     <QtMoc Include="ImageViewWidget.h">
       <Filter>Header Files</Filter>
     </QtMoc>
@@ -117,6 +117,12 @@
       <Filter>Header Files</Filter>
     </QtMoc>
     <QtMoc Include="DicomManager.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="OpenGLWindow.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="VolumeViewWidget.h">
       <Filter>Header Files</Filter>
     </QtMoc>
   </ItemGroup>

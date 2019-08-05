@@ -1,5 +1,5 @@
 #include "MainWindow.h"
-#include "OpenGLWidget.h"
+#include "VolumeViewWidget.h"
 
 #include <QLayout>
 #include <QMenuBar>
@@ -12,40 +12,45 @@ MainWindow::MainWindow() {
 	// Create Dicom data manager
 	this->m_dicom_manager = new DicomManager(this);
 
-	buildLayout();
+	_buildLayout();
 
-	createMenuBar();
+	_createMenuBar();
 
 	connect(m_dicom_manager, &DicomManager::changeVolume, [this] {
+		// Set title of window
 		this->setWindowTitle(QString("MedView(")+QString(this->m_dicom_manager->getFilename())+QString(")"));
 	});
 }
 
-void MainWindow::buildLayout() {
+/**
+ *
+ */
+void MainWindow::_buildLayout() {
 	QWidget *window = new QWidget();
 
 	QGridLayout *layout = new QGridLayout(window);
+	layout->setContentsMargins(0, 0, 0, 0);
 	
 	/* Axial View*/
 	this->m_axial_view = new ImageViewWidget(Mode::MODE_AXIAL, this->m_dicom_manager, this);
-	this->m_axial_view->setMinimumWidth(512);
+	//this->m_axial_view->setMinimumWidth(512);
 
 	/* Coronal View*/
 	this->m_coronal_view = new ImageViewWidget(Mode::MODE_CORONAL, this->m_dicom_manager, this);
-	this->m_coronal_view->setMinimumWidth(512);
+	//this->m_coronal_view->setMinimumWidth(512);
 
 	/* Sagittal View*/
 	this->m_sagittal_view = new ImageViewWidget(Mode::MODE_SAGITTAL, this->m_dicom_manager, this);
-	this->m_sagittal_view->setMinimumWidth(512);
+	//this->m_sagittal_view->setMinimumWidth(512);
 
-	QWindow* vr_view = new OpenGLWidget(m_dicom_manager, 0);
-	vr_view->setMinimumWidth(512);
-	vr_view->setMinimumHeight(512);
-	QWidget* m_vr_view = QWidget::createWindowContainer(vr_view);
+	this->m_vr_view = new VolumeViewWidget(m_dicom_manager, this);
+	//vr_view->setMinimumWidth(512);
+	////vr_view->setMinimumHeight(512);
+	//QWidget* m_vr_view = QWidget::createWindowContainer(vr_view);
 	//m_vr_view->setMaximumWidth(512);
 	//m_vr_view->setMaximumHeight(512);
-	m_vr_view->setFocusPolicy(Qt::TabFocus);
-	m_vr_view->setContentsMargins(0,0,0,0);
+	//m_vr_view->setFocusPolicy(Qt::TabFocus);
+	//m_vr_view->setContentsMargins(0,0,0,0);
 
 	layout->addWidget(m_axial_view, 0, 0);
 	layout->addWidget(m_coronal_view, 1, 0);
@@ -57,7 +62,7 @@ void MainWindow::buildLayout() {
 	setCentralWidget(window);
 }
 
-void MainWindow::createMenuBar() {
+void MainWindow::_createMenuBar() {
 
 
 	QMenu *file;

@@ -18,6 +18,7 @@ SliceWidget::SliceWidget(QWidget* parent=NULL)
 	m_is_left_pressed = false;
 	m_is_right_pressed = false;
 	m_is_point_on_lines = false;
+	m_is_point_inside_circle = false;
 
 	// Set default background color
 	this->setStyleSheet("QLabel { background-color : black; }");
@@ -40,6 +41,9 @@ void SliceWidget::setLines(QLine lh, QLine lv, QColor ch, QColor cv) {
 	// Set line color
 	m_color_line_horizontal = ch;
 	m_color_line_vertical = cv;
+
+	// Find meet point of two lines
+	QLineF(m_line_horizontal).intersect(QLineF(m_line_vertical), &m_line_meet);
 }
 
 void SliceWidget::drawSlice(QImage* img){
@@ -82,24 +86,47 @@ void SliceWidget::drawAxes(QPainter *painter) {
 	qDebug() << this->m_line_vertical;
 }
 
+/* ===========================================================================
+   ===========================================================================
+   
+								QT Listeners
 
+   ===========================================================================
+   =========================================================================== */
 
+/**
+ * Listen for cursor moving on screen.
+ */
 void SliceWidget::mouseMoveEvent(QMouseEvent *e) {
-
 	if (m_is_slice_loaded && m_is_cursor_on) {
 
 		ImageViewWidget* manager = qobject_cast<ImageViewWidget*>(parent());		// Access parent widget
 
-		if (m_is_left_pressed && m_is_point_on_lines) {
-			if (m_prev_cursor_point == e->pos()) return;			// To prevent impossible acos
+		// Change the Cursor shape
+		if (_isPointInsideCircle(e->pos())) {
+			this->setCursor(Qt::SizeAllCursor);
+		}
+		else if (_isPointOnLines(e->pos())) {
+			if (m_is_left_pressed) this->setCursor(Qt::ClosedHandCursor);
+			else this->setCursor(Qt::OpenHandCursor);
+		}
+		else {
+			this->setCursor(Qt::ArrowCursor);
+		}
 
-			QPointF center;
-			QLineF(m_line_horizontal).intersect(QLineF(m_line_vertical), &center);	// Find intersection of lines
+		/* Move the center of axes */
+		if (m_is_left_pressed && m_is_point_inside_circle) {
+			QVector2D delta(e->pos() - m_prev_cursor_point);
+			emit changeAxesCenter(e->pos().x(), e->pos().y());
+		}
+		/* Rotate axes with mouse */
+		else if (m_is_left_pressed && m_is_point_on_lines) {
+			if (m_prev_cursor_point == e->pos()) return;							// To prevent impossible acos
 
 			qDebug() << "prev" << m_prev_cursor_point;
 
-			QVector2D v_prev(m_prev_cursor_point - center);
-			QVector2D v_cur(e->pos() - center);
+			QVector2D v_prev(m_prev_cursor_point - m_line_meet);
+			QVector2D v_cur(e->pos() - m_line_meet);
 			v_prev.normalize();
 			v_cur.normalize();
 
@@ -107,13 +134,13 @@ void SliceWidget::mouseMoveEvent(QMouseEvent *e) {
 			float prev_degree = acos(QVector2D::dotProduct(v_prev, QVector2D(1, 0))) * 180 / M_PI;
 			float cur_degree = acos(QVector2D::dotProduct(v_cur, QVector2D(1, 0))) * 180 / M_PI;
 
-			if (m_prev_cursor_point.y() > center.y()) prev_degree *= -1;
-			if (e->y() > center.y()) cur_degree *= -1;
+			if (m_prev_cursor_point.y() > m_line_meet.y()) prev_degree *= -1;
+			if (e->y() > m_line_meet.y()) cur_degree *= -1;
 
 			float degree = cur_degree - prev_degree;
 			// TODO:: make this more accurate
-			if ((m_prev_cursor_point.y() > center.y() && e->y() <= center.y()) ||
-				m_prev_cursor_point.y() <= center.y() && e->y() > center.y()) {
+			if ((m_prev_cursor_point.y() > m_line_meet.y() && e->y() <= m_line_meet.y()) ||
+				m_prev_cursor_point.y() <= m_line_meet.y() && e->y() > m_line_meet.y()) {
 				if (degree > 0) {
 					degree = degree - 360;
 				}
@@ -127,6 +154,7 @@ void SliceWidget::mouseMoveEvent(QMouseEvent *e) {
 			qDebug() << degree;
 			emit changeDegree(degree);
 		}
+		/* Change Windowing with mouse */
 		else if (m_is_right_pressed) {
 			QVector2D delta(e->pos() - m_prev_cursor_point);
 			emit changeWindowing(delta.x(), delta.y());
@@ -160,6 +188,8 @@ void SliceWidget::mousePressEvent(QMouseEvent *e) {
 			qDebug() << "Left mouse pressed";
 			m_is_left_pressed = true;
 			m_is_point_on_lines = _isPointOnLines(e->pos());
+			m_is_point_inside_circle = _isPointInsideCircle(e->pos());
+
 		}
 
 		if (e->buttons() & Qt::RightButton) {
@@ -177,6 +207,7 @@ void SliceWidget::mouseReleaseEvent(QMouseEvent *e) {
 			qDebug() << "Left mouse Released";
 			m_is_left_pressed = false;
 			m_is_point_on_lines = false;
+			m_is_point_inside_circle = false;
 		}
 		if (e->button() == Qt::RightButton) {
 			qDebug() << "Right mouse Released";
@@ -255,6 +286,14 @@ bool SliceWidget::_isPointOnLines(QPoint p) {
 	return false;
 }
 
+bool SliceWidget::_isPointInsideCircle(QPoint p) {
+	return (p.x() - m_line_meet.x()) * (p.x() - m_line_meet.x()) 
+			+ (p.y() - m_line_meet.y()) * (p.y() - m_line_meet.y()) 
+			<= m_circle_radius * m_circle_radius;
+}
+
 bool SliceWidget::_isPointNearPoint(QPointF a, QPointF b, int range) {
-	return std::sqrt((a.x() - b.x()) *(a.x() - b.x()) + (a.y() - b.y()) *(a.y() - b.y())) <= range;
+	return (a.x() - b.x()) *(a.x() - b.x()) 
+			+ (a.y() - b.y()) *(a.y() - b.y())
+			<= range * range;
 }

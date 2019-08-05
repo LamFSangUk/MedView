@@ -1,5 +1,5 @@
-#ifndef __OPENGLWIDGET__
-#define __OPENGLWIDGET__
+#ifndef __OPENGL_WINDOW_H__
+#define __OPENGL_WINDOW_H__
 
 #include <QWindow>
 #include <QOpenGLFunctions_3_3_Core>
@@ -11,15 +11,15 @@
 #include<QQuaternion>
 
 #include "DicomManager.h"
-#include "ArcBall.h"
+#include "Utils/ArcBall.h"
 
 class QOpenGLShaderProgram;
 
-class OpenGLWidget : public QWindow, protected QOpenGLFunctions_3_3_Core
+class OpenGLWindow : public QWindow, protected QOpenGLFunctions_3_3_Core
 {
 	Q_OBJECT
 public:
-	OpenGLWidget(DicomManager*, QWindow*);
+	OpenGLWindow(DicomManager*, QWindow*);
 	//~OpenGLWindow();
 
 	void reset();
@@ -27,16 +27,17 @@ public:
 	void loadObject();
 	void render();
 
-	void exposeEvent(QExposeEvent *event);
-	void resizeEvent(QResizeEvent *);
+	
 
 protected:
-	void initializeGL();
-
+	/* Qt Mouse Events */
 	void mouseMoveEvent(QMouseEvent *) override;
 	void mousePressEvent(QMouseEvent*) override;
 	void mouseReleaseEvent(QMouseEvent*) override;
 
+	/* OpenGL Events */
+	void exposeEvent(QExposeEvent *event);
+	void resizeEvent(QResizeEvent *);
 private:
 	DicomManager *m_dicom_manager;
 
@@ -49,6 +50,8 @@ private:
 	//TODO:: rename this
 	bool volumeload = false;
 	bool glInitialized = false;
+
+	void _initializeGL();
 
 	void _loadVolume();
 	GLuint m_volume_texture;
@@ -65,15 +68,15 @@ private:
 	QMatrix4x4 m_model_mat;
 	QMatrix4x4 m_view_mat;
 	QMatrix4x4 m_rotation_mat;
-	QMatrix4x4 temp;
+
 	void _initializeMatrix();
 
 	ArcBall* arc;
 
 	/* Mouse cursor status */
 	bool m_is_right_pressed;
-	QPoint m_prev_point;
 
+	/* Cube vertices for drawing volume */
 	const GLfloat m_cube_vertices[24] = {
 		// front
 		0.0, 0.0, 1.0,
@@ -109,4 +112,4 @@ private:
 	};
 };
 
-#endif // __OPENGLWINDOW__
+#endif // __OPENGL_WINDOW_H__

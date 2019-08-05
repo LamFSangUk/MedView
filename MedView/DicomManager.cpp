@@ -411,7 +411,7 @@ void DicomManager::_updateSlice() {
 	}
 	m_axial_slice = m_volume->getSlice(Mode::MODE_AXIAL, m_axes,
 		m_standard_slice_size.width(), m_standard_slice_size.height(), m_axial_center);
-	std::vector<QLine> axial_lines = getAxesLines(Mode::MODE_AXIAL, m_standard_slice_size.width(), m_standard_slice_size.height());
+	//std::vector<QLine> axial_lines = getAxesLines(Mode::MODE_AXIAL, m_standard_slice_size.width(), m_standard_slice_size.height());
 
 	// Coronal plane
 	if (m_coronal_slice) {
@@ -420,7 +420,7 @@ void DicomManager::_updateSlice() {
 	}
 	m_coronal_slice = m_volume->getSlice(Mode::MODE_CORONAL, m_axes,
 		m_standard_slice_size.width(), m_standard_slice_size.height(), m_coronal_center);
-	std::vector<QLine> coronal_lines = getAxesLines(Mode::MODE_CORONAL, m_standard_slice_size.width(), m_standard_slice_size.height());
+	//std::vector<QLine> coronal_lines = getAxesLines(Mode::MODE_CORONAL, m_standard_slice_size.width(), m_standard_slice_size.height());
 
 	// Sagittal plane
 	if (m_sagittal_slice) {
@@ -429,7 +429,7 @@ void DicomManager::_updateSlice() {
 	}
 	m_sagittal_slice = m_volume->getSlice(Mode::MODE_SAGITTAL, m_axes,
 		m_standard_slice_size.width(), m_standard_slice_size.height(), m_sagittal_center);
-	std::vector<QLine> sagittal_lines = getAxesLines(Mode::MODE_SAGITTAL, m_standard_slice_size.width(), m_standard_slice_size.height());
+	//std::vector<QLine> sagittal_lines = getAxesLines(Mode::MODE_SAGITTAL, m_standard_slice_size.width(), m_standard_slice_size.height());
 	
 	// create parameter packets
 	std::map<Mode, SlicePacket> packets;

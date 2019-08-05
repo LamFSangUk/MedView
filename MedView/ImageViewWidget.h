@@ -41,7 +41,7 @@ private:
 	SliceWidget* m_slice_view;
 	QSlider* m_slider;
 
-	void buildLayout();
+	void _buildLayout();
 	void draw(Mode, QImage*);
 
 };

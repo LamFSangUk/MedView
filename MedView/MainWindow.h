@@ -6,6 +6,7 @@
 #include <QSlider>
 
 #include "ImageViewWidget.h"
+#include "VolumeViewWidget.h"
 #include "DicomManager.h"
 
 class MainWindow : public QMainWindow
@@ -22,22 +23,20 @@ private slots:
 	void reset();
 
 private:
-	void buildLayout();
-	void createMenuBar();
+	void _buildLayout();
+	void _createMenuBar();
 
-	const int m_height = 1080;
-	const int m_width = 1080;
+	/* default size of window */
+	const int m_height = 1200;
+	const int m_width = 1200;
 
+	/* widgets */
 	ImageViewWidget *m_axial_view;
 	ImageViewWidget *m_coronal_view;
 	ImageViewWidget *m_sagittal_view;
-	
-	QSlider *m_axial_slider;
-	QSlider *m_coronal_slider;
-	QSlider *m_sagital_slider;
+	VolumeViewWidget *m_vr_view;
 
-	QWidget *m_vr_view;
-
+	/* data manager */
 	DicomManager *m_dicom_manager;
 };
 

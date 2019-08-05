@@ -1,11 +1,11 @@
-#include "OpenGLWidget.h"
+#include "OpenGLWindow.h"
 #include <QOpenGLShaderProgram>
 
 #include <QPainter>
 
 #include <iostream>
 
-OpenGLWidget::OpenGLWidget(DicomManager *dicom_manager, QWindow* parent = 0)
+OpenGLWindow::OpenGLWindow(DicomManager *dicom_manager, QWindow* parent = 0)
 	: QWindow(parent)
 {
 	this->m_dicom_manager = dicom_manager;
@@ -19,8 +19,9 @@ OpenGLWidget::OpenGLWidget(DicomManager *dicom_manager, QWindow* parent = 0)
 	m_context->create();
 
 	// Initialize for OpenGL
-	initializeGL();
+	_initializeGL();
 
+	// Connect a signal to listen changing volume data
 	connect(m_dicom_manager, &DicomManager::changeVolume, [this] {
 		this->loadObject();
 		this->render();
@@ -30,11 +31,9 @@ OpenGLWidget::OpenGLWidget(DicomManager *dicom_manager, QWindow* parent = 0)
 	// Create ArcBall
 	QSize size = this->size();
 	arc = new ArcBall(size.width(), size.height());
-
-	
 }
 
-void OpenGLWidget::initializeGL() {
+void OpenGLWindow::_initializeGL() {
 	qDebug("Initialze gl");
 	m_context->makeCurrent(this);
 	initializeOpenGLFunctions();
@@ -42,7 +41,6 @@ void OpenGLWidget::initializeGL() {
 	/* OpenGL information */
 	printf("Renderer: %s\n", glGetString(GL_RENDERER));
 	printf("OpenGL version: %s\n", glGetString(GL_VERSION));
-
 
 	GLuint cube_vbo;
 	glGenBuffers(1, &cube_vbo);
@@ -66,14 +64,17 @@ void OpenGLWidget::initializeGL() {
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	// Open our shaders
+
+	// Firstpass shader: create 2d texture which saves endpoint of ray.
 	m_raycast_firstpass_shader = new QOpenGLShaderProgram;
-	m_raycast_firstpass_shader->addShaderFromSourceFile(QOpenGLShader::Vertex, "./shaders/firstpass.vert");
-	m_raycast_firstpass_shader->addShaderFromSourceFile(QOpenGLShader::Fragment, "./shaders/firstpass.frag");
+	m_raycast_firstpass_shader->addShaderFromSourceFile(QOpenGLShader::Vertex, "./Shaders/firstpass.vert");
+	m_raycast_firstpass_shader->addShaderFromSourceFile(QOpenGLShader::Fragment, "./Shaders/firstpass.frag");
 	m_raycast_firstpass_shader->link();
 	
+	// Secondpass shader: Calculate color with ray
 	m_raycast_shader = new QOpenGLShaderProgram();
-	m_raycast_shader->addShaderFromSourceFile(QOpenGLShader::Vertex, "./shaders/raycast.vert");
-	m_raycast_shader->addShaderFromSourceFile(QOpenGLShader::Fragment, "./shaders/raycast.frag");
+	m_raycast_shader->addShaderFromSourceFile(QOpenGLShader::Vertex, "./Shaders/raycast.vert");
+	m_raycast_shader->addShaderFromSourceFile(QOpenGLShader::Fragment, "./Shaders/raycast.frag");
 	m_raycast_shader->link();
 
 	QSize size = this->size();
@@ -88,26 +89,27 @@ void OpenGLWidget::initializeGL() {
 /**
  * Reset all matrix and re-rendering
  */
-void OpenGLWidget::reset() {
+void OpenGLWindow::reset() {
 	_initializeMatrix();
 	render();
 }
 
-void OpenGLWidget::_initializeMatrix() {
+void OpenGLWindow::_initializeMatrix() {
 
+	// Rotate to show sagittal view at first
 	m_model_mat.rotate(180.0, 0.0, 0.0, 1.0);
 	m_model_mat.rotate(-90.0, 1.0, 0.0, 0.0);
 
+	// Translate model to center of screen
 	m_model_mat.translate(-0.5, -0.5, -0.5);
 
 	m_view_mat.lookAt(
 		QVector3D(0.0, 0.0, 1.0),
 		QVector3D(0.0, 0.0, 0.0),
 		QVector3D(0.0, 1.0, 0.0));
-
 }
 
-void OpenGLWidget::loadObject() {
+void OpenGLWindow::loadObject() {
 
 	// Load Volume data
 	_loadVolume();
@@ -115,7 +117,7 @@ void OpenGLWidget::loadObject() {
 	volumeload = true;
 }
 
-void OpenGLWidget::_loadVolume() {
+void OpenGLWindow::_loadVolume() {
 
 	glDeleteTextures(1, &m_volume_texture);
 	glGenTextures(1, &m_volume_texture);
@@ -145,7 +147,10 @@ void OpenGLWidget::_loadVolume() {
 	glBindTexture(GL_TEXTURE_3D, 0); // Release
 }
 
-void OpenGLWidget::render()
+/**
+ * Display the volume on our screen.
+ */
+void OpenGLWindow::render()
 {
 	m_context->makeCurrent(this);
 
@@ -200,7 +205,7 @@ void OpenGLWidget::render()
 	m_context->swapBuffers(this);
 }
 
-void OpenGLWidget::_renderCube(QOpenGLShaderProgram* shader, GLuint cull_face) {
+void OpenGLWindow::_renderCube(QOpenGLShaderProgram* shader, GLuint cull_face) {
 	glEnable(GL_DEPTH_TEST);
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -219,7 +224,7 @@ void OpenGLWidget::_renderCube(QOpenGLShaderProgram* shader, GLuint cull_face) {
 	glDisable(GL_CULL_FACE);
 }
 
-void OpenGLWidget::_initializeTargetTexture(int width, int height) {
+void OpenGLWindow::_initializeTargetTexture(int width, int height) {
 	glDeleteTextures(1, &m_target_texture);
 	glGenTextures(1, &m_target_texture);
 	glBindTexture(GL_TEXTURE_2D, m_target_texture);
@@ -233,7 +238,7 @@ void OpenGLWidget::_initializeTargetTexture(int width, int height) {
 	glBindTexture(GL_TEXTURE_2D, 0); // release
 }
 
-void OpenGLWidget::_initializeFramebuffer(int width, int height) {
+void OpenGLWindow::_initializeFramebuffer(int width, int height) {
 	glDeleteRenderbuffers(1, &m_depth_buffer);
 	glDeleteFramebuffers(1, &m_framebuffer);
 
@@ -252,28 +257,9 @@ void OpenGLWidget::_initializeFramebuffer(int width, int height) {
 	glBindFramebuffer(GL_FRAMEBUFFER, 0); // release
 }
 
-void OpenGLWidget::exposeEvent(QExposeEvent *e) {
-	Q_UNUSED(e);
-	
-	QSize size = this->size();
-	glViewport(0, 0, size.width(), size.height());
 
-	render();	
-}
-void OpenGLWidget::resizeEvent(QResizeEvent *e) {
-	QSize size = e->size();
-	
-	if (glInitialized) {
-		// Resize target texture and framebuffer object
-		_initializeTargetTexture(size.width(), size.height());
-		_initializeFramebuffer(size.width(), size.height());
-
-		// Resize Arcball
-		arc->setBounds(size.width(), size.height());
-	}
-}
-
-void OpenGLWidget::mouseMoveEvent(QMouseEvent* e) {
+/* Qt Mouse Event */
+void OpenGLWindow::mouseMoveEvent(QMouseEvent* e) {
 	QPoint cur_point = e->pos();
 
 	if (m_is_right_pressed) {
@@ -281,23 +267,43 @@ void OpenGLWidget::mouseMoveEvent(QMouseEvent* e) {
 
 		render();
 	}
-
-	m_prev_point = cur_point;
 }
 
-void OpenGLWidget::mousePressEvent(QMouseEvent* e) {
+void OpenGLWindow::mousePressEvent(QMouseEvent* e) {
 	if (e->buttons() & Qt::RightButton) {
 		qDebug() << "Right mouse pressed";
 		m_is_right_pressed = true;
 
 		arc->setStart(e->pos().x(), e->pos().y());
-		temp = m_view_mat;
 	}
 }
 
-void OpenGLWidget::mouseReleaseEvent(QMouseEvent* e) {
+void OpenGLWindow::mouseReleaseEvent(QMouseEvent* e) {
 	if (e->button() == Qt::RightButton) {
 		qDebug() << "Right mouse Released";
 		m_is_right_pressed = false;
+	}
+}
+
+/* OpenGL Events */
+void OpenGLWindow::exposeEvent(QExposeEvent *e) {
+	Q_UNUSED(e);
+
+	QSize size = this->size();
+	glViewport(0, 0, size.width(), size.height());
+
+	render();
+}
+void OpenGLWindow::resizeEvent(QResizeEvent *e) {
+	QSize size = e->size();
+	qDebug() << size;
+
+	if (glInitialized) {
+		// Resize target texture and framebuffer object
+		_initializeTargetTexture(size.width(), size.height());
+		_initializeFramebuffer(size.width(), size.height());
+
+		// Resize Arcball
+		arc->setBounds(size.width(), size.height());
 	}
 }

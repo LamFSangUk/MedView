@@ -115,29 +115,37 @@
     </QtRcc>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="ArcBall.cpp" />
+    <ClCompile Include="Utils\ArcBall.cpp" />
     <ClCompile Include="DataStructure\axes.cpp" />
     <ClCompile Include="CursorCoordinator.cpp" />
     <ClCompile Include="DicomManager.cpp" />
     <ClCompile Include="ImageViewWidget.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="MainWindow.cpp" />
-    <ClCompile Include="OpenGLWidget.cpp" />
+    <ClCompile Include="OpenGLWindow.cpp" />
     <ClCompile Include="SliceWidget.cpp" />
     <ClCompile Include="DataStructure\volume.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="DataStructure\slice.cpp" />
     <ClCompile Include="DataStructure\voxel.cpp" />
-    <ClInclude Include="ArcBall.h" />
+    <ClCompile Include="VolumeViewWidget.cpp" />
+    <ClInclude Include="Utils\ArcBall.h" />
     <ClInclude Include="DataStructure\axes.h">
       <FileType>CppHeader</FileType>
     </ClInclude>
     <ClInclude Include="common.h" />
     <ClInclude Include="DataStructure\voxel.h" />
+    <QtMoc Include="VolumeViewWidget.h">
+      <IncludePath Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">D:\AnnotationProject\MedView\MedView\include;D:\AnnotationProject\gdcm\vs_build\Source\Common;D:\AnnotationProject\gdcm\gdcm-3.0.0\Source\Common;D:\AnnotationProject\gdcm\gdcm-3.0.0\Source\DataStructureAndEncodingDefinition;D:\AnnotationProject\gdcm\gdcm-3.0.0\Source\MediaStorageAndFileFormat;D:\AnnotationProject\gdcm\gdcm-3.0.0\Source\InformationObjectDefinition;D:\AnnotationProject\gdcm\gdcm-3.0.0\Source\MessageExchangeDefinition;D:\AnnotationProject\gdcm\gdcm-3.0.0\Source\DataDictionary;D:\AnnotationProject\gdcm\gdcm-3.0.0\Utilities;.\GeneratedFiles;.;$(QTDIR)\include;.\GeneratedFiles\$(ConfigurationName);$(QTDIR)\include\Qt3DCore;$(QTDIR)\include\Qt3DAnimation;$(QTDIR)\include\Qt3DExtras;$(QTDIR)\include\Qt3DInput;$(QTDIR)\include\Qt3DLogic;$(QTDIR)\include\Qt3DRender;$(QTDIR)\include\Qt3DQuick;$(QTDIR)\include\Qt3DQuickAnimation;$(QTDIR)\include\Qt3DQuickExtras;$(QTDIR)\include\Qt3DQuickInput;$(QTDIR)\include\Qt3DQuickRender;$(QTDIR)\include\Qt3DQuickScene2D;$(QTDIR)\include\QtCore;$(QTDIR)\include\QtGui;$(QTDIR)\include\QtANGLE;$(QTDIR)\include\QtOpenGL;$(QTDIR)\include\QtOpenGLExtensions;$(QTDIR)\include\QtUiTools;$(QTDIR)\include\QtWidgets</IncludePath>
+      <IncludePath Condition="'$(Configuration)|$(Platform)'=='Release|x64'">D:\AnnotationProject\MedView\MedView\include;D:\AnnotationProject\gdcm\vs_build\Source\Common;D:\AnnotationProject\gdcm\gdcm-3.0.0\Source\Common;D:\AnnotationProject\gdcm\gdcm-3.0.0\Source\DataStructureAndEncodingDefinition;D:\AnnotationProject\gdcm\gdcm-3.0.0\Source\MediaStorageAndFileFormat;D:\AnnotationProject\gdcm\gdcm-3.0.0\Source\InformationObjectDefinition;D:\AnnotationProject\gdcm\gdcm-3.0.0\Source\MessageExchangeDefinition;D:\AnnotationProject\gdcm\gdcm-3.0.0\Source\DataDictionary;D:\AnnotationProject\gdcm\gdcm-3.0.0\Utilities;.\GeneratedFiles;.;$(QTDIR)\include;.\GeneratedFiles\$(ConfigurationName);$(QTDIR)\include\Qt3DCore;$(QTDIR)\include\Qt3DAnimation;$(QTDIR)\include\Qt3DExtras;$(QTDIR)\include\Qt3DInput;$(QTDIR)\include\Qt3DLogic;$(QTDIR)\include\Qt3DRender;$(QTDIR)\include\Qt3DQuick;$(QTDIR)\include\Qt3DQuickAnimation;$(QTDIR)\include\Qt3DQuickExtras;$(QTDIR)\include\Qt3DQuickInput;$(QTDIR)\include\Qt3DQuickRender;$(QTDIR)\include\Qt3DQuickScene2D;$(QTDIR)\include\QtCore;$(QTDIR)\include\QtGui;$(QTDIR)\include\QtANGLE;$(QTDIR)\include\QtOpenGL;$(QTDIR)\include\QtOpenGLExtensions;$(QTDIR)\include\QtUiTools;$(QTDIR)\include\QtWidgets</IncludePath>
+    </QtMoc>
   </ItemGroup>
   <ItemGroup>
-    <QtMoc Include="OpenGLWidget.h" />
+    <QtMoc Include="OpenGLWindow.h">
+      <IncludePath Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">D:\AnnotationProject\MedView\MedView\include;D:\AnnotationProject\gdcm\vs_build\Source\Common;D:\AnnotationProject\gdcm\gdcm-3.0.0\Source\Common;D:\AnnotationProject\gdcm\gdcm-3.0.0\Source\DataStructureAndEncodingDefinition;D:\AnnotationProject\gdcm\gdcm-3.0.0\Source\MediaStorageAndFileFormat;D:\AnnotationProject\gdcm\gdcm-3.0.0\Source\InformationObjectDefinition;D:\AnnotationProject\gdcm\gdcm-3.0.0\Source\MessageExchangeDefinition;D:\AnnotationProject\gdcm\gdcm-3.0.0\Source\DataDictionary;D:\AnnotationProject\gdcm\gdcm-3.0.0\Utilities;.\GeneratedFiles;.;$(QTDIR)\include;.\GeneratedFiles\$(ConfigurationName);$(QTDIR)\include\Qt3DCore;$(QTDIR)\include\Qt3DAnimation;$(QTDIR)\include\Qt3DExtras;$(QTDIR)\include\Qt3DInput;$(QTDIR)\include\Qt3DLogic;$(QTDIR)\include\Qt3DRender;$(QTDIR)\include\Qt3DQuick;$(QTDIR)\include\Qt3DQuickAnimation;$(QTDIR)\include\Qt3DQuickExtras;$(QTDIR)\include\Qt3DQuickInput;$(QTDIR)\include\Qt3DQuickRender;$(QTDIR)\include\Qt3DQuickScene2D;$(QTDIR)\include\QtCore;$(QTDIR)\include\QtGui;$(QTDIR)\include\QtANGLE;$(QTDIR)\include\QtOpenGL;$(QTDIR)\include\QtOpenGLExtensions;$(QTDIR)\include\QtUiTools;$(QTDIR)\include\QtWidgets</IncludePath>
+      <IncludePath Condition="'$(Configuration)|$(Platform)'=='Release|x64'">D:\AnnotationProject\MedView\MedView\include;D:\AnnotationProject\gdcm\vs_build\Source\Common;D:\AnnotationProject\gdcm\gdcm-3.0.0\Source\Common;D:\AnnotationProject\gdcm\gdcm-3.0.0\Source\DataStructureAndEncodingDefinition;D:\AnnotationProject\gdcm\gdcm-3.0.0\Source\MediaStorageAndFileFormat;D:\AnnotationProject\gdcm\gdcm-3.0.0\Source\InformationObjectDefinition;D:\AnnotationProject\gdcm\gdcm-3.0.0\Source\MessageExchangeDefinition;D:\AnnotationProject\gdcm\gdcm-3.0.0\Source\DataDictionary;D:\AnnotationProject\gdcm\gdcm-3.0.0\Utilities;.\GeneratedFiles;.;$(QTDIR)\include;.\GeneratedFiles\$(ConfigurationName);$(QTDIR)\include\Qt3DCore;$(QTDIR)\include\Qt3DAnimation;$(QTDIR)\include\Qt3DExtras;$(QTDIR)\include\Qt3DInput;$(QTDIR)\include\Qt3DLogic;$(QTDIR)\include\Qt3DRender;$(QTDIR)\include\Qt3DQuick;$(QTDIR)\include\Qt3DQuickAnimation;$(QTDIR)\include\Qt3DQuickExtras;$(QTDIR)\include\Qt3DQuickInput;$(QTDIR)\include\Qt3DQuickRender;$(QTDIR)\include\Qt3DQuickScene2D;$(QTDIR)\include\QtCore;$(QTDIR)\include\QtGui;$(QTDIR)\include\QtANGLE;$(QTDIR)\include\QtOpenGL;$(QTDIR)\include\QtOpenGLExtensions;$(QTDIR)\include\QtUiTools;$(QTDIR)\include\QtWidgets</IncludePath>
+    </QtMoc>
   </ItemGroup>
   <ItemGroup>
     <QtUic Include="MedView.ui" />

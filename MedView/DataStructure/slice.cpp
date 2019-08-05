@@ -52,16 +52,26 @@ Slice::~Slice() {
 }
 
 std::tuple<int, int> Slice::getPositionOfVoxel(float x, float y, float z) {
+
+	std::cout << "x: " << x << "y: " << y << "z: " << z << std::endl;
+	float min_dist_squared = m_width * m_width + m_height * m_height;
+	std::tuple<int, int> nearest_point = std::make_tuple(m_width/2, m_height/2);
+
 	for (int i = 0; i < m_height; i++) {
 		for (int j = 0; j < m_width; j++) {
 			Eigen::Vector4f pos = getVoxelCoord(j, i);
-			if ((int)x == (int)pos(0) && (int)y == (int)pos(1) && (int)z == (int)pos(2)) {
-				std::cout << j << " " << i << std::endl;
-				return std::make_tuple(j, i);
+
+			float dist_squared = (x - pos(0)) *(x - pos(0)) 
+								+ (y - pos(1))*(y - pos(1))
+								+ (z - pos(2))*(z - pos(2));
+
+			if (min_dist_squared > dist_squared) {
+				min_dist_squared = dist_squared;
+				nearest_point = std::make_tuple(j, i);
 			}
 		}
 	}
-	std::cout << "Error!" << std::endl;
+	return nearest_point;
 }
 
 

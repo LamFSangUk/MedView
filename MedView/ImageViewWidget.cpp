@@ -19,7 +19,7 @@ ImageViewWidget::ImageViewWidget(Mode mode, DicomManager *dicom_manager,QWidget*
 	this->m_idx_max = 0;
 
 	// Set Layout
-	this->buildLayout();
+	this->_buildLayout();
 
 	connect(m_dicom_manager, SIGNAL(changeVolume()), this, SLOT(initView()));
 
@@ -47,29 +47,26 @@ ImageViewWidget::ImageViewWidget(Mode mode, DicomManager *dicom_manager,QWidget*
 
 }
 
-void ImageViewWidget::buildLayout() {
+void ImageViewWidget::_buildLayout() {
 	QVBoxLayout *layout = new QVBoxLayout(this);
 	layout->setContentsMargins(0, 0, 0, 0);
 
-	// Slider size
-	QSize max_size_slider(1000, 10);
-	QSize min_size_slider(100, 10);
-
 	// SliceWidget size
-	//QSize max_size_label(m_width / 2,m_height / 2);
 	QSize min_size_slice(512, 512);
 
 	m_slice_view = new SliceWidget(this);
 	m_slice_view->setMinimumSize(min_size_slice);
+	m_slice_view->showMaximized();
+	m_slice_view->setMargin(0);
 
 	m_slider = new QSlider(Qt::Horizontal, this);
-	m_slider->setMaximumSize(max_size_slider);
-	m_slider->setMinimumSize(min_size_slider);
+	m_slider->setMaximumHeight(10);
 	m_slider->setEnabled(false);
 	m_slider->setObjectName("slider");
+	m_slider->showMaximized();
 
-	layout->addWidget(m_slice_view, 0, Qt::AlignCenter);
-	layout->addWidget(m_slider, 0, Qt::AlignBottom);
+	layout->addWidget(m_slice_view, 0);
+	layout->addWidget(m_slider, 0);
 
 	this->setLayout(layout);
 }
