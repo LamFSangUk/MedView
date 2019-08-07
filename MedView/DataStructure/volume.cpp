@@ -63,15 +63,21 @@ namespace vdcm {
 			char* temp_buffer = new char[length];
 			image.GetBuffer(temp_buffer);
 
+			int max_val = INT_MIN;
+			int min_val = INT_MAX;
 			for (int i = 0; i < length; i+=2) {
 				int16_t val = (unsigned char)temp_buffer[i] | ((unsigned char)temp_buffer[i+1] << 8);
 				
-				buffer[i/2] = (val * volume->m_rescale_slope + volume->m_rescale_intercept);
+				buffer[i/2] = (val * volume->m_rescale_slope + volume->m_rescale_intercept); // Rescale
+				if (buffer[i / 2] > max_val) max_val = buffer[i / 2];
+				if (buffer[i / 2] < min_val) min_val = buffer[i / 2];
 			}
 			
 			std::vector<int16_t> slice(buffer, buffer + length/2);
 
 			volume->m_volume_data.push_back(slice);
+			volume->setMaxIntensity(max_val);
+			volume->setMinIntensity(min_val);
 
 			delete temp_buffer;
 			delete buffer;
@@ -84,11 +90,11 @@ namespace vdcm {
 
 	}
 
-	Slice* Volume::getSlice(Mode mode, Axes* axes, int width, int height, Eigen::Vector3f center) {
+	Slice* Volume::getSlice(Mode mode, Axes* axes, int width, int height, Eigen::Vector3f center, float zoom) {
 		Slice* s = new Slice(width, height, (width -1)/2.0f, (height -1)/2.0f);
 
 		// Transformation
-		s->refTransform(mode, axes->getCenter(), center, axes->getYaw(), axes->getRoll(), axes->getPitch());
+		s->refTransform(mode, axes->getCenter(), center, axes->getYaw(), axes->getRoll(), axes->getPitch(), zoom);
 
 		// Interpolate
 		for (int i = 0; i < s->getHeight(); i++) {
@@ -136,23 +142,12 @@ namespace vdcm {
 		int size = m_width * m_height * m_depth;
 		float* buffer = new float[size];
 
-		float min = INT16_MAX;
-		float max = INT16_MIN;
-
 		for (int i = 0; i < m_depth; i++) {
 			for (int j = 0; j < m_height; j++) {
 				for (int k = 0; k < m_width; k++) {
-					float val = m_volume_data[i][j * m_width + k];
-					if (val > max) max = val;
-					if (val < min) min = val;
-				}
-			}
-		}
-
-		for (int i = 0; i < m_depth; i++) {
-			for (int j = 0; j < m_height; j++) {
-				for (int k = 0; k < m_width; k++) {
-					buffer[i * m_width * m_height + j * m_width + k] = (m_volume_data[i][j * m_width + k] - min)/(max-min);
+					buffer[i * m_width * m_height + j * m_width + k]
+						= (m_volume_data[i][j * m_width + k] - INT16_MIN)
+						/(float)(INT16_MAX - INT16_MIN);
 				}
 			}
 		}

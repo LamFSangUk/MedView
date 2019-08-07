@@ -34,6 +34,7 @@ protected:
 	void mouseMoveEvent(QMouseEvent *) override;
 	void mousePressEvent(QMouseEvent*) override;
 	void mouseReleaseEvent(QMouseEvent*) override;
+	void wheelEvent(QWheelEvent *) override;
 
 	/* OpenGL Events */
 	void exposeEvent(QExposeEvent *event);
@@ -65,16 +66,30 @@ private:
 
 	void _renderCube(QOpenGLShaderProgram*, GLuint);
 
+	/* OpenGL MVP matrices */
 	QMatrix4x4 m_model_mat;
 	QMatrix4x4 m_view_mat;
 	QMatrix4x4 m_rotation_mat;
-
 	void _initializeMatrix();
 
 	ArcBall* arc;
 
 	/* Mouse cursor status */
 	bool m_is_right_pressed;
+	bool m_is_left_pressed;
+
+	QPoint m_prev_cursor_point;
+
+	/* Windowing */
+	int m_window_width;
+	int m_window_level;
+	void _initializeWindowing();
+
+	/* Zoom In and Out */
+	const float m_zoom_max = 4.0f;
+	const float m_zoom_min = 0.25f;
+	const float m_zoom_speed = 0.001f;
+	float m_zoom = 1.0f;
 
 	/* Cube vertices for drawing volume */
 	const GLfloat m_cube_vertices[24] = {

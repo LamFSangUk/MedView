@@ -11,11 +11,22 @@ uniform sampler3D voltex;
 uniform float screen_width;
 uniform float screen_height;
 
+// Windowing
+uniform float window_min;
+uniform float window_max;
+
 vec4 colour_transfer(float intensity){
 	vec3 high = vec3(1.0);
 	vec3 low = vec3(0.0);
 	float alpha = (exp(intensity) - 1.0)/(exp(1.0) - 1.0);
 	return vec4(intensity*high+(1.0-intensity)*low,alpha);
+}
+
+float simple_windowing(float intensity){
+	if(intensity < window_min) intensity = window_min;
+	if(intensity > window_max) intensity = window_max;
+
+	return (intensity-window_min) / (window_max-window_min);
 }
 
 void main()
@@ -48,6 +59,8 @@ void main()
 	for(int i = 0; i < nb_samples && len>0; i++, pos+=ray_delta, len-=sample_step_size){
 		// Sample intensity from volume data
 		intensity = texture(voltex, pos).r;
+
+		intensity = simple_windowing(intensity);
 
 		vec4 color = colour_transfer(intensity);
 

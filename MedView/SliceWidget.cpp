@@ -29,8 +29,6 @@ SliceWidget::SliceWidget(QWidget* parent=NULL)
 	// Display mouse coordinate
 	this->m_cur_coord = new CursorCoordinator(this);
 
-	//this->m_cur_coord->move(QPoint(40, 40));
-	//this->m_cur_coord->show();
 	connect(this, SIGNAL(changeCoords(int, int, int, int)), this->m_cur_coord, SLOT(setCoord(int, int, int, int)));
 }
 
@@ -77,13 +75,11 @@ void SliceWidget::drawAxes(QPainter *painter) {
 	pen.setColor(m_color_line_horizontal);
 	painter->setPen(pen);
 	painter->drawLine(m_line_horizontal);
-	qDebug() << this->m_line_horizontal;
 
 	// Vertical line
 	pen.setColor(m_color_line_vertical);
 	painter->setPen(pen);
 	painter->drawLine(m_line_vertical);
-	qDebug() << this->m_line_vertical;
 }
 
 /* ===========================================================================
@@ -123,14 +119,11 @@ void SliceWidget::mouseMoveEvent(QMouseEvent *e) {
 		else if (m_is_left_pressed && m_is_point_on_lines) {
 			if (m_prev_cursor_point == e->pos()) return;							// To prevent impossible acos
 
-			qDebug() << "prev" << m_prev_cursor_point;
-
 			QVector2D v_prev(m_prev_cursor_point - m_line_meet);
 			QVector2D v_cur(e->pos() - m_line_meet);
 			v_prev.normalize();
 			v_cur.normalize();
 
-			qDebug() << v_prev;
 			float prev_degree = acos(QVector2D::dotProduct(v_prev, QVector2D(1, 0))) * 180 / M_PI;
 			float cur_degree = acos(QVector2D::dotProduct(v_cur, QVector2D(1, 0))) * 180 / M_PI;
 
@@ -149,10 +142,12 @@ void SliceWidget::mouseMoveEvent(QMouseEvent *e) {
 				}
 			}
 
-			qDebug() << prev_degree;
-			qDebug() << cur_degree;
-			qDebug() << degree;
 			emit changeDegree(degree);
+		}
+		/* Change Zoom in and out parameter */
+		else if (m_is_left_pressed) {
+			QVector2D delta(e->pos() - m_prev_cursor_point);
+			emit changeZoom(delta.x() + delta.y());
 		}
 		/* Change Windowing with mouse */
 		else if (m_is_right_pressed) {
@@ -255,6 +250,14 @@ void SliceWidget::leaveEvent(QEvent *e) {
 
 	this->m_cur_coord->setVisible(false);
 }
+
+/* ===========================================================================
+   ===========================================================================
+
+							Utils for Cursor positon
+
+   ===========================================================================
+   =========================================================================== */
 
 bool SliceWidget::_isPointOnLines(QPoint p) {
 

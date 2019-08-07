@@ -21,7 +21,7 @@ Slice::Slice(int width, int height, float origin_x, float origin_y) {
 	for (int i = 0; i < m_height; i++) {
 		std::vector<Voxel> v;
 		for (int j = 0; j < m_width; j++) {
-			Voxel voxel(j-origin_x, i-origin_y, 0.0f, 0);
+			Voxel voxel((j-origin_x), (i-origin_y), 0.0f, 0);
 			v.push_back(voxel);
 		}
 		m_slice.push_back(v);
@@ -53,7 +53,6 @@ Slice::~Slice() {
 
 std::tuple<int, int> Slice::getPositionOfVoxel(float x, float y, float z) {
 
-	std::cout << "x: " << x << "y: " << y << "z: " << z << std::endl;
 	float min_dist_squared = m_width * m_width + m_height * m_height;
 	std::tuple<int, int> nearest_point = std::make_tuple(m_width/2, m_height/2);
 
@@ -76,7 +75,7 @@ std::tuple<int, int> Slice::getPositionOfVoxel(float x, float y, float z) {
 
 
 void Slice::refTransform(Mode mode, Eigen::Vector4d axes_center_d, Eigen::Vector3f center,
-						float degree_yaw, float degree_roll, float degree_pitch) {
+						float degree_yaw, float degree_roll, float degree_pitch, float zoom = 1.0f) {
 	Eigen::Matrix4f mat;		// the final affine matrix for transformations
 	Eigen::Matrix4f transform;	// temporal affine matrix for single transformation(translate, rotate)
 	double cos_v, sin_v;
@@ -89,6 +88,7 @@ void Slice::refTransform(Mode mode, Eigen::Vector4d axes_center_d, Eigen::Vector
 		1. Rotate plane for mode
 		2. Rotate a plane about rotation axis
 		3. Move a plane to center of axes
+		4. Do Zoom in or out
 	*/
 
 	mat.setIdentity();
@@ -148,12 +148,17 @@ void Slice::refTransform(Mode mode, Eigen::Vector4d axes_center_d, Eigen::Vector
 		mat = transform * mat;
 	}
 
-	//3.
+	// 3.
 	transform.setIdentity();
 	transform.col(3) = axes_center;
 	mat = transform * mat;
 
-	std::cout << mat << std::endl;
+	// 4.
+	transform.setIdentity();
+	transform(0, 0) = zoom;
+	transform(1, 1) = zoom;
+	transform(2, 2) = zoom;
+	mat = transform * mat;
 
 	// create postion matrix
 	Eigen::MatrixXf pos(m_height*m_width,4);

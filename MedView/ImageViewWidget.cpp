@@ -42,6 +42,9 @@ ImageViewWidget::ImageViewWidget(Mode mode, DicomManager *dicom_manager,QWidget*
 		QSize view_size = this->m_slice_view->getSize();
 		this->m_dicom_manager->updateAxesCenter(this->m_mode, x, y, view_size.width(), view_size.height());
 	});
+	connect(m_slice_view, &SliceWidget::changeZoom, [this](float delta) {
+		this->m_dicom_manager->updateZoom(delta);
+	});
 
 	connect(m_dicom_manager, &DicomManager::changeSlice, this, &ImageViewWidget::updateView);
 
@@ -104,25 +107,6 @@ std::vector<int> ImageViewWidget::getPixelInfo(int x, int y) {
 	return m_dicom_manager->getVoxelInfo(m_mode, r_x, r_y);
 }
 
-void ImageViewWidget::setLines() {
-	std::vector<QLine> lines = this->m_dicom_manager->getAxesLines(m_mode, 512, 512);
-
-	switch (this->m_mode) {
-		case Mode::MODE_AXIAL:
-			this->m_slice_view->setLines(lines[0], lines[1], QColor(Qt::blue), QColor(Qt::green));
-			break;
-		case Mode::MODE_CORONAL:
-			this->m_slice_view->setLines(lines[0], lines[1], QColor(Qt::red), QColor(Qt::blue));
-			break;
-		case Mode::MODE_SAGITTAL:
-			this->m_slice_view->setLines(lines[0], lines[1], QColor(Qt::red), QColor(Qt::green));
-			break;
-		default:
-			return;
-	}
-
-}
-
 void ImageViewWidget::increaseIndex() {
 	m_slider->setValue(m_slider->value() + 1);
 }
@@ -136,7 +120,6 @@ void ImageViewWidget::updateView(std::map<Mode, DicomManager::SlicePacket> packe
 		// Not found
 	}
 	else {
-		qDebug() << "updated";
 		DicomManager::SlicePacket data = pos->second;
 		
 		m_idx_slice = data.cur_idx;

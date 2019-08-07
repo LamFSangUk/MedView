@@ -25,7 +25,6 @@ signals:
 
 private slots:
 	void initView();
-	void setLines();
 	void updateView(std::map<Mode, DicomManager::SlicePacket>);
 
 	void increaseIndex();

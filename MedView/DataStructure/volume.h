@@ -16,13 +16,16 @@ namespace vdcm {
 
 		friend Volume* read(const char*);
 
-		Slice* getSlice(Mode, Axes*, int, int, Eigen::Vector3f);
+		Slice* getSlice(Mode, Axes*, int, int, Eigen::Vector3f, float);
 
 		int getWidth();
 		int getHeight();
 		int getDepth();
 
 		float* getBuffer();
+
+		void setMaxIntensity(int);
+		void setMinIntensity(int);
 	private:
 		std::vector<std::vector<int16_t> > m_volume_data;
 		int m_width;
@@ -31,6 +34,13 @@ namespace vdcm {
 
 		int m_rescale_slope;
 		int m_rescale_intercept;
+
+		int m_max_intensity;
+		int m_min_intensity;
 	};
+
+	inline void Volume::setMaxIntensity(int intensity) { m_max_intensity = intensity; }
+	inline void Volume::setMinIntensity(int intensity) { m_min_intensity = intensity; }
 }
+
 #endif // __VOLUME_H__

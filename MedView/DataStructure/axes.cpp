@@ -115,8 +115,6 @@ namespace vdcm {
 		m_axis_coronal << dir(0), dir(1), dir(2);
 		m_axis_coronal.normalize();
 
-		std::cout << "Coronal"<< m_axis_coronal << std::endl;
-
 		// Direction of X-axis
 		dir << m_axis_sagittal(0), m_axis_sagittal(1), m_axis_sagittal(2), 1;
 		dir = mat * dir;

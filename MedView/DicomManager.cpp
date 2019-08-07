@@ -163,6 +163,17 @@ void DicomManager::updateWindowing(int delta_level, int delta_width) {
 	emit changeValue();
 }
 
+/**
+ * Update Zoom in and out parameter
+ */
+void DicomManager::updateZoom(float delta) {
+	m_zoom -= delta * m_zoom_speed *m_zoom;
+	m_zoom = std::max(m_zoom, m_zoom_min);
+	m_zoom = std::min(m_zoom, m_zoom_max);
+
+	emit changeValue();
+}
+
 void DicomManager::updateAxesCenter(Mode m, int x, int y, int slice_width, int slice_height) {
 
 	x = (int)((float)x * m_standard_slice_size.width() / slice_width);
@@ -217,36 +228,6 @@ void DicomManager::updateSliceCenter(Mode m, int x, int y) {
 	}
 
 	emit changeValue();
-}
-
-std::vector<QLine> DicomManager::getAxesLines(Mode mode, int width, int height) {
-	
-	float angle = m_axes->getAngle(mode);
-	Eigen::Vector4d center = m_axes->getCenter();
-
-	std::tuple<int, int> plane_center;
-
-	switch (mode) {
-		case Mode::MODE_AXIAL:
-			plane_center = m_axial_slice->getPositionOfVoxel(center(0),center(1), center(2));
-			break;
-		case Mode::MODE_CORONAL:
-			plane_center = m_coronal_slice->getPositionOfVoxel(center(0), center(1), center(2));
-			break;
-		case Mode::MODE_SAGITTAL:
-			plane_center = m_sagittal_slice->getPositionOfVoxel(center(0), center(1), center(2));
-			break;
-		default:
-			break;
-	}
-
-	
-
-	std::vector<QLine> res;
-	//res.push_back(lh);
-	//res.push_back(lv);
-
-	return res;
 }
 
 /**
@@ -402,7 +383,6 @@ QImage DicomManager::_convertSliceToImage(Slice* s) {
  * Extract the slice from volume data and update it.
  */
 void DicomManager::_updateSlice() {
-	qDebug() << "Updated Varaibles";
 
 	// Axial plane
 	if (m_axial_slice) {
@@ -410,8 +390,7 @@ void DicomManager::_updateSlice() {
 		m_axial_slice = nullptr;
 	}
 	m_axial_slice = m_volume->getSlice(Mode::MODE_AXIAL, m_axes,
-		m_standard_slice_size.width(), m_standard_slice_size.height(), m_axial_center);
-	//std::vector<QLine> axial_lines = getAxesLines(Mode::MODE_AXIAL, m_standard_slice_size.width(), m_standard_slice_size.height());
+		m_standard_slice_size.width(), m_standard_slice_size.height(), m_axial_center, m_zoom);
 
 	// Coronal plane
 	if (m_coronal_slice) {
@@ -419,8 +398,7 @@ void DicomManager::_updateSlice() {
 		m_coronal_slice = nullptr;
 	}
 	m_coronal_slice = m_volume->getSlice(Mode::MODE_CORONAL, m_axes,
-		m_standard_slice_size.width(), m_standard_slice_size.height(), m_coronal_center);
-	//std::vector<QLine> coronal_lines = getAxesLines(Mode::MODE_CORONAL, m_standard_slice_size.width(), m_standard_slice_size.height());
+		m_standard_slice_size.width(), m_standard_slice_size.height(), m_coronal_center, m_zoom);
 
 	// Sagittal plane
 	if (m_sagittal_slice) {
@@ -428,8 +406,7 @@ void DicomManager::_updateSlice() {
 		m_sagittal_slice = nullptr;
 	}
 	m_sagittal_slice = m_volume->getSlice(Mode::MODE_SAGITTAL, m_axes,
-		m_standard_slice_size.width(), m_standard_slice_size.height(), m_sagittal_center);
-	//std::vector<QLine> sagittal_lines = getAxesLines(Mode::MODE_SAGITTAL, m_standard_slice_size.width(), m_standard_slice_size.height());
+		m_standard_slice_size.width(), m_standard_slice_size.height(), m_sagittal_center, m_zoom);
 	
 	// create parameter packets
 	std::map<Mode, SlicePacket> packets;

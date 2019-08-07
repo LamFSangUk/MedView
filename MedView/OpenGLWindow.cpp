@@ -21,6 +21,9 @@ OpenGLWindow::OpenGLWindow(DicomManager *dicom_manager, QWindow* parent = 0)
 	// Initialize for OpenGL
 	_initializeGL();
 
+	// Initialize windowing parameter
+	_initializeWindowing();
+
 	// Connect a signal to listen changing volume data
 	connect(m_dicom_manager, &DicomManager::changeVolume, [this] {
 		this->loadObject();
@@ -91,10 +94,16 @@ void OpenGLWindow::_initializeGL() {
  */
 void OpenGLWindow::reset() {
 	_initializeMatrix();
+	_initializeWindowing();
+
+	m_zoom = 1.0f;
+
 	render();
 }
 
 void OpenGLWindow::_initializeMatrix() {
+
+	m_model_mat.setToIdentity();
 
 	// Rotate to show sagittal view at first
 	m_model_mat.rotate(180.0, 0.0, 0.0, 1.0);
@@ -103,10 +112,16 @@ void OpenGLWindow::_initializeMatrix() {
 	// Translate model to center of screen
 	m_model_mat.translate(-0.5, -0.5, -0.5);
 
+	m_view_mat.setToIdentity();
 	m_view_mat.lookAt(
-		QVector3D(0.0, 0.0, 1.0),
+		QVector3D(0.0, 0.0, 5.0),
 		QVector3D(0.0, 0.0, 0.0),
 		QVector3D(0.0, 1.0, 0.0));
+}
+
+void OpenGLWindow::_initializeWindowing() {
+	m_window_level = 50;
+	m_window_width = 350;
 }
 
 void OpenGLWindow::loadObject() {
@@ -164,8 +179,7 @@ void OpenGLWindow::render()
 
 		/* First Pass */
 		glEnable(GL_DEPTH_TEST);
-		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_framebuffer);
-		glViewport(0, 0, size.width(), size.height());
+		glBindFramebuffer(GL_FRAMEBUFFER, m_framebuffer);
 
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -178,7 +192,6 @@ void OpenGLWindow::render()
 		/* Second Pass */
 		// volume data
 		m_raycast_shader->bind();
-		glViewport(0, 0, size.width(), size.height());
 
 		glEnable(GL_DEPTH_TEST);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -197,9 +210,30 @@ void OpenGLWindow::render()
 		glUniform1f(glGetUniformLocation(m_raycast_shader->programId(), "screen_width"), (GLfloat) this->size().width());
 		glUniform1f(glGetUniformLocation(m_raycast_shader->programId(), "screen_height"), (GLfloat) this->size().height());
 
+		
+		// Windowing parameter
+		// TODO:: replace windowing with transfer function
+		float window_min = m_window_level - m_window_width / 2;
+		float window_max = m_window_level + m_window_width / 2;
+
+		// Normalize
+		window_min = (window_min - INT16_MIN) / (float)(INT16_MAX - INT16_MIN);
+		window_max = (window_max - INT16_MIN) / (float)(INT16_MAX - INT16_MIN);
+		
+		glUniform1f(glGetUniformLocation(m_raycast_shader->programId(), "window_min"), (GLfloat) window_min);
+		glUniform1f(glGetUniformLocation(m_raycast_shader->programId(), "window_max"), (GLfloat) window_max);
+
+
 		_renderCube(m_raycast_shader, GL_BACK);
 
 		m_raycast_shader->release();
+
+		// Draw Cube Edges
+		m_raycast_firstpass_shader->bind();
+		glEnable(GL_LINE_SMOOTH);
+		glLineWidth(3.0f);
+		glDrawElements(GL_LINES, 36, GL_UNSIGNED_INT, 0);
+		m_raycast_firstpass_shader->release();
 	}
 
 	m_context->swapBuffers(this);
@@ -214,7 +248,10 @@ void OpenGLWindow::_renderCube(QOpenGLShaderProgram* shader, GLuint cull_face) {
 	//proj.perspective(60.0, 1.0, 0.1f, 100.0f);
 	proj.ortho(-0.7f, 0.7f, -0.7f, 0.7f, 0.1f, 100.0f);
 	QMatrix4x4 rotated_view = m_view_mat * QMatrix4x4(arc->getRotationMatrix());
-	QMatrix4x4 mvp = proj * rotated_view * m_model_mat;
+	QMatrix4x4 scaled_model;
+	scaled_model.scale(m_zoom);
+	scaled_model = scaled_model * m_model_mat;
+	QMatrix4x4 mvp = proj * rotated_view * scaled_model;
 	glUniformMatrix4fv(glGetUniformLocation(shader->programId(), "mvp"), 1, GL_FALSE, mvp.constData());
 
 	glEnable(GL_CULL_FACE);
@@ -257,19 +294,41 @@ void OpenGLWindow::_initializeFramebuffer(int width, int height) {
 	glBindFramebuffer(GL_FRAMEBUFFER, 0); // release
 }
 
+/* ===========================================================================
+   ===========================================================================
 
-/* Qt Mouse Event */
+								QT Listeners
+
+   ===========================================================================
+   =========================================================================== */
+
 void OpenGLWindow::mouseMoveEvent(QMouseEvent* e) {
-	QPoint cur_point = e->pos();
-
 	if (m_is_right_pressed) {
 		arc->rotate(e->pos().x(), e->pos().y());
 
 		render();
 	}
+	else if (m_is_left_pressed) {
+		// Update Windowing
+		QVector2D delta(e->pos() - m_prev_cursor_point);
+
+		m_window_level += delta.x();
+		m_window_width += delta.y();
+
+		std::cout << m_window_level << std::endl << m_window_width << std::endl;
+
+		render();
+	}
+
+	m_prev_cursor_point = e->pos();
 }
 
 void OpenGLWindow::mousePressEvent(QMouseEvent* e) {
+	if (e->buttons() & Qt::LeftButton) {
+		qDebug() << "Left mouse pressed";
+		m_is_left_pressed = true;
+	}
+
 	if (e->buttons() & Qt::RightButton) {
 		qDebug() << "Right mouse pressed";
 		m_is_right_pressed = true;
@@ -279,11 +338,29 @@ void OpenGLWindow::mousePressEvent(QMouseEvent* e) {
 }
 
 void OpenGLWindow::mouseReleaseEvent(QMouseEvent* e) {
+	if (e->button() == Qt::LeftButton) {
+		qDebug() << "Left mouse Released";
+		m_is_left_pressed = false;
+	}
+
 	if (e->button() == Qt::RightButton) {
 		qDebug() << "Right mouse Released";
 		m_is_right_pressed = false;
 	}
 }
+
+void OpenGLWindow::wheelEvent(QWheelEvent *e) {
+	if (volumeload) {
+		float delta = e->delta();
+
+		m_zoom += delta * m_zoom_speed *m_zoom;
+		m_zoom = std::max(m_zoom, m_zoom_min);
+		m_zoom = std::min(m_zoom, m_zoom_max);
+
+		render();
+	}
+}
+
 
 /* OpenGL Events */
 void OpenGLWindow::exposeEvent(QExposeEvent *e) {

@@ -30,15 +30,12 @@ public:
 		QPoint line_center;
 		float angle;
 	};
-
-
-	std::vector<QLine> getAxesLines(Mode, int, int);
-
 	void reset();
 
 	void updateSliceIndex(Mode, int);
 	void updateAngle(Mode, float);
 	void updateWindowing(int, int);
+	void updateZoom(float);
 	void updateAxesCenter(Mode, int, int, int, int);
 	void updateSliceCenter(Mode, int, int);
 
@@ -88,6 +85,12 @@ private:
 	/* Windowing */
 	int m_window_width;
 	int m_window_level;
+
+	/* Zoom in and out */
+	const float m_zoom_max = 4.0f;
+	const float m_zoom_min = 0.25f;
+	const float m_zoom_speed = 0.01f;
+	float m_zoom = 1.0f;
 
 	/* utils */
 	bool _isPointOutOfVolume(Eigen::Vector3f);

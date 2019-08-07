@@ -35,6 +35,7 @@ signals:
 	void requestDecIndex();
 	void changeWindowing(int, int);
 	void changeAxesCenter(int, int);
+	void changeZoom(float);
 
 private:
 	bool m_is_slice_loaded;		// check the slice to show is loaded
