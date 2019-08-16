@@ -334,8 +334,9 @@ void DicomManager::_initValues() {
 	m_sagittal_center << center_x, center_y, center_z;
 
 	// Default windowing
-	m_window_width = 350;
-	m_window_level = 50;
+	std::pair<int, int> window = m_volume->getDefaultWindowing();
+	m_window_level = window.first;
+	m_window_width = window.second;
 }
 
 /**
@@ -391,6 +392,7 @@ void DicomManager::_updateSlice() {
 	}
 	m_axial_slice = m_volume->getSlice(Mode::MODE_AXIAL, m_axes,
 		m_standard_slice_size.width(), m_standard_slice_size.height(), m_axial_center, m_zoom);
+	//std::vector<QLine> axial_lines = getAxesLines(Mode::MODE_AXIAL, m_standard_slice_size.width(), m_standard_slice_size.height());
 
 	// Coronal plane
 	if (m_coronal_slice) {
@@ -399,6 +401,7 @@ void DicomManager::_updateSlice() {
 	}
 	m_coronal_slice = m_volume->getSlice(Mode::MODE_CORONAL, m_axes,
 		m_standard_slice_size.width(), m_standard_slice_size.height(), m_coronal_center, m_zoom);
+	//std::vector<QLine> coronal_lines = getAxesLines(Mode::MODE_CORONAL, m_standard_slice_size.width(), m_standard_slice_size.height());
 
 	// Sagittal plane
 	if (m_sagittal_slice) {
@@ -407,6 +410,7 @@ void DicomManager::_updateSlice() {
 	}
 	m_sagittal_slice = m_volume->getSlice(Mode::MODE_SAGITTAL, m_axes,
 		m_standard_slice_size.width(), m_standard_slice_size.height(), m_sagittal_center, m_zoom);
+	//std::vector<QLine> sagittal_lines = getAxesLines(Mode::MODE_SAGITTAL, m_standard_slice_size.width(), m_standard_slice_size.height());
 	
 	// create parameter packets
 	std::map<Mode, SlicePacket> packets;
@@ -422,6 +426,8 @@ void DicomManager::_updateSlice() {
 	plane_center = m_axial_slice->getPositionOfVoxel(center(0), center(1), center(2));
 	packet.line_center = QPoint(std::get<0>(plane_center),std::get<1>(plane_center));
 	packet.angle = m_axes->getAngle(Mode::MODE_AXIAL);
+	packet.windowing_level = m_window_level;
+	packet.windowing_width = m_window_width;
 	packets.insert(std::pair<Mode, SlicePacket>(Mode::MODE_AXIAL, packet));
 
 	packet.cur_idx = m_coronal_idx;
@@ -430,6 +436,8 @@ void DicomManager::_updateSlice() {
 	plane_center = m_coronal_slice->getPositionOfVoxel(center(0), center(1), center(2));
 	packet.line_center = QPoint(std::get<0>(plane_center), std::get<1>(plane_center));
 	packet.angle = m_axes->getAngle(Mode::MODE_CORONAL);
+	packet.windowing_level = m_window_level;
+	packet.windowing_width = m_window_width;
 	packets.insert(std::pair<Mode, SlicePacket>(Mode::MODE_CORONAL, packet));
 
 	packet.cur_idx = m_sagittal_idx;
@@ -438,6 +446,8 @@ void DicomManager::_updateSlice() {
 	plane_center = m_sagittal_slice->getPositionOfVoxel(center(0), center(1), center(2));
 	packet.line_center = QPoint(std::get<0>(plane_center), std::get<1>(plane_center));
 	packet.angle = m_axes->getAngle(Mode::MODE_SAGITTAL);
+	packet.windowing_level = m_window_level;
+	packet.windowing_width = m_window_width;
 	packets.insert(std::pair<Mode, SlicePacket>(Mode::MODE_SAGITTAL, packet));
 
 	qDebug() << "Finish Rendering Slices";

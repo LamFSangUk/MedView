@@ -12,6 +12,11 @@ ArcBall::~ArcBall() {
 
 }
 
+void ArcBall::reset() {
+	this->m_quat_anchor.setIdentity();
+	this->m_quat_now.setIdentity();
+}
+
 /**
  * Resize screen and arcball
  */

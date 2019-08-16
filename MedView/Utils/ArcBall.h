@@ -21,6 +21,8 @@ public:
 	float* getRotationMatrix();
 	void rotate(int, int);
 
+	void reset();
+
 private:
 	int m_window_width;
 	int m_window_height;

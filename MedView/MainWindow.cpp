@@ -107,4 +107,5 @@ void MainWindow::quit() {
 
 void MainWindow::reset() {
 	m_dicom_manager->reset();
+	m_vr_view->reset();
 }

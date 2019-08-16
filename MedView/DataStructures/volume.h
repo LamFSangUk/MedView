@@ -26,6 +26,8 @@ namespace vdcm {
 
 		void setMaxIntensity(int);
 		void setMinIntensity(int);
+
+		std::pair<int, int> getDefaultWindowing();
 	private:
 		std::vector<std::vector<int16_t> > m_volume_data;
 		int m_width;
@@ -34,6 +36,14 @@ namespace vdcm {
 
 		int m_rescale_slope;
 		int m_rescale_intercept;
+
+		int m_window_level;
+		int m_window_width;
+
+		float m_pixel_spacing_x;
+		float m_pixel_spacing_y;
+		float m_slice_thickness;
+		float m_slice_spacing;
 
 		int m_max_intensity;
 		int m_min_intensity;

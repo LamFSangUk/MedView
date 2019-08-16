@@ -125,10 +125,14 @@ void ImageViewWidget::updateView(std::map<Mode, DicomManager::SlicePacket> packe
 		m_idx_slice = data.cur_idx;
 		m_idx_max = data.max_idx;
 
+		// Update slider value
 		m_slider->blockSignals(true);
 		m_slider->setMaximum(m_idx_max);
 		m_slider->setValue(m_idx_slice);
 		m_slider->blockSignals(false);
+
+		// Update Windowing Value
+		m_slice_view->updateWindowingValue(data.windowing_level, data.windowing_width);
 
 		// Resize the lines
 		QSize show_size = m_slice_view->getSize();

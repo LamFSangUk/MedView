@@ -4,9 +4,9 @@
 #include <QObject>
 #include <QImage>
 
-#include "DataStructure/volume.h"
-#include "DataStructure/axes.h"
-#include "DataStructure/slice.h"
+#include "DataStructures/volume.h"
+#include "DataStructures/axes.h"
+#include "DataStructures/slice.h"
 
 #include "common.h"
 
@@ -29,6 +29,8 @@ public:
 		QImage slice;
 		QPoint line_center;
 		float angle;
+		int windowing_level;
+		int windowing_width;
 	};
 	void reset();
 

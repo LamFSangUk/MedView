@@ -3,7 +3,8 @@
 
 #include <QLabel>
 #include <QImage>
-#include "CursorCoordinator.h"
+#include "Components/CursorCoordinator.h"
+#include "Components/WindowingIndicator.h"
 
 #include "common.h"
 
@@ -27,6 +28,8 @@ public:
 
 	void setLines(QLine, QLine, QColor, QColor);
 
+	void updateWindowingValue(int, int);
+
 	QSize getSize();
 signals:
 	void changeCoords(int, int, int, int);
@@ -46,7 +49,10 @@ private:
 	bool m_is_point_inside_circle;
 
 	QImage m_slice;
-	CursorCoordinator* m_cur_coord;
+
+	CursorCoordinator* m_cur_coord_indicator;
+
+	WindowingIndicator* m_windowing_indicator;
 
 	QLine m_line_horizontal;
 	QLine m_line_vertical;

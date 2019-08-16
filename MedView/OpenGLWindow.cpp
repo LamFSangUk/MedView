@@ -31,6 +31,11 @@ OpenGLWindow::OpenGLWindow(DicomManager *dicom_manager, QWindow* parent = 0)
 	});
 
 	m_is_right_pressed = false;
+	m_is_left_pressed = false;
+
+	//TODO:: Temporal default mode
+	m_rendering_mode = MIP;
+
 	// Create ArcBall
 	QSize size = this->size();
 	arc = new ArcBall(size.width(), size.height());
@@ -75,10 +80,15 @@ void OpenGLWindow::_initializeGL() {
 	m_raycast_firstpass_shader->link();
 	
 	// Secondpass shader: Calculate color with ray
-	m_raycast_shader = new QOpenGLShaderProgram();
-	m_raycast_shader->addShaderFromSourceFile(QOpenGLShader::Vertex, "./Shaders/raycast.vert");
-	m_raycast_shader->addShaderFromSourceFile(QOpenGLShader::Fragment, "./Shaders/raycast.frag");
-	m_raycast_shader->link();
+	m_raycast_otf_shader = new QOpenGLShaderProgram();
+	m_raycast_otf_shader->addShaderFromSourceFile(QOpenGLShader::Vertex, "./Shaders/raycast.vert");
+	m_raycast_otf_shader->addShaderFromSourceFile(QOpenGLShader::Fragment, "./Shaders/raycast_otf.frag");
+	m_raycast_otf_shader->link();
+
+	m_raycast_mip_shader = new QOpenGLShaderProgram();
+	m_raycast_mip_shader->addShaderFromSourceFile(QOpenGLShader::Vertex, "./Shaders/raycast.vert");
+	m_raycast_mip_shader->addShaderFromSourceFile(QOpenGLShader::Fragment, "./Shaders/raycast_mip.frag");
+	m_raycast_mip_shader->link();
 
 	QSize size = this->size();
 	_initializeTargetTexture(size.width(), size.height());
@@ -97,6 +107,25 @@ void OpenGLWindow::reset() {
 	_initializeWindowing();
 
 	m_zoom = 1.0f;
+
+	arc->reset();
+
+	render();
+}
+
+/**
+ * Set Render Mode
+ */
+void OpenGLWindow::setRenderMode(std::string mode) {
+	if (mode.compare("MIP")==0) {
+		m_rendering_mode = MIP;
+	}
+	else if (mode.compare("OTF")==0) {
+		m_rendering_mode = OTF;
+	}
+	else { // Default Mode
+		m_rendering_mode = OTF;
+	}
 
 	render();
 }
@@ -120,8 +149,8 @@ void OpenGLWindow::_initializeMatrix() {
 }
 
 void OpenGLWindow::_initializeWindowing() {
-	m_window_level = 50;
-	m_window_width = 350;
+	m_window_level = 200;
+	m_window_width = 200;
 }
 
 void OpenGLWindow::loadObject() {
@@ -190,8 +219,13 @@ void OpenGLWindow::render()
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		
 		/* Second Pass */
-		// volume data
-		m_raycast_shader->bind();
+
+		// Select shader
+		QOpenGLShaderProgram* raycast_shader;
+		if (m_rendering_mode == MIP)	raycast_shader = m_raycast_mip_shader;
+		else							raycast_shader = m_raycast_otf_shader;
+
+		raycast_shader->bind();
 
 		glEnable(GL_DEPTH_TEST);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -200,15 +234,15 @@ void OpenGLWindow::render()
 		glActiveTexture(GL_TEXTURE0);
 		glEnable(GL_TEXTURE_2D);
 		glBindTexture(GL_TEXTURE_2D, m_target_texture);
-		glUniform1i(glGetUniformLocation(m_raycast_shader->programId(), "backtex"), 0);
+		glUniform1i(glGetUniformLocation(raycast_shader->programId(), "backtex"), 0);
 
 		glActiveTexture(GL_TEXTURE1);
 		glEnable(GL_TEXTURE_3D);
 		glBindTexture(GL_TEXTURE_3D, m_volume_texture);
-		glUniform1i(glGetUniformLocation(m_raycast_shader->programId(), "voltex"), 1);
+		glUniform1i(glGetUniformLocation(raycast_shader->programId(), "voltex"), 1);
 
-		glUniform1f(glGetUniformLocation(m_raycast_shader->programId(), "screen_width"), (GLfloat) this->size().width());
-		glUniform1f(glGetUniformLocation(m_raycast_shader->programId(), "screen_height"), (GLfloat) this->size().height());
+		glUniform1f(glGetUniformLocation(raycast_shader->programId(), "screen_width"), (GLfloat) this->size().width());
+		glUniform1f(glGetUniformLocation(raycast_shader->programId(), "screen_height"), (GLfloat) this->size().height());
 
 		
 		// Windowing parameter
@@ -220,13 +254,13 @@ void OpenGLWindow::render()
 		window_min = (window_min - INT16_MIN) / (float)(INT16_MAX - INT16_MIN);
 		window_max = (window_max - INT16_MIN) / (float)(INT16_MAX - INT16_MIN);
 		
-		glUniform1f(glGetUniformLocation(m_raycast_shader->programId(), "window_min"), (GLfloat) window_min);
-		glUniform1f(glGetUniformLocation(m_raycast_shader->programId(), "window_max"), (GLfloat) window_max);
+		glUniform1f(glGetUniformLocation(raycast_shader->programId(), "window_min"), (GLfloat) window_min);
+		glUniform1f(glGetUniformLocation(raycast_shader->programId(), "window_max"), (GLfloat) window_max);
 
 
-		_renderCube(m_raycast_shader, GL_BACK);
+		_renderCube(raycast_shader, GL_BACK);
 
-		m_raycast_shader->release();
+		raycast_shader->release();
 
 		// Draw Cube Edges
 		m_raycast_firstpass_shader->bind();
@@ -314,6 +348,7 @@ void OpenGLWindow::mouseMoveEvent(QMouseEvent* e) {
 
 		m_window_level += delta.x();
 		m_window_width += delta.y();
+		if (m_window_width < 0) m_window_width = 0; // Limit
 
 		std::cout << m_window_level << std::endl << m_window_width << std::endl;
 

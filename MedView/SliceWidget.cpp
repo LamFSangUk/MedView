@@ -27,9 +27,12 @@ SliceWidget::SliceWidget(QWidget* parent=NULL)
 	this->setMouseTracking(true);
 
 	// Display mouse coordinate
-	this->m_cur_coord = new CursorCoordinator(this);
+	this->m_cur_coord_indicator = new CursorCoordinator(this);
 
-	connect(this, SIGNAL(changeCoords(int, int, int, int)), this->m_cur_coord, SLOT(setCoord(int, int, int, int)));
+	// Display Windowing Value
+	this->m_windowing_indicator = new WindowingIndicator(this);
+
+	connect(this, SIGNAL(changeCoords(int, int, int, int)), this->m_cur_coord_indicator, SLOT(setCoord(int, int, int, int)));
 }
 
 void SliceWidget::setLines(QLine lh, QLine lv, QColor ch, QColor cv) {
@@ -42,6 +45,10 @@ void SliceWidget::setLines(QLine lh, QLine lv, QColor ch, QColor cv) {
 
 	// Find meet point of two lines
 	QLineF(m_line_horizontal).intersect(QLineF(m_line_vertical), &m_line_meet);
+}
+
+void SliceWidget::updateWindowingValue(int level, int width) {
+	m_windowing_indicator->setWindowingValue(level, width);
 }
 
 void SliceWidget::drawSlice(QImage* img){
@@ -229,6 +236,9 @@ void SliceWidget::wheelEvent(QWheelEvent *e) {
 void SliceWidget::resizeEvent(QResizeEvent* e) {
 	qDebug() << "Resized: " << e->size();
 	this->m_size = e->size();
+
+	// Move Windowing indicator
+	this->m_windowing_indicator->move(QPoint(5, m_size.height() - 40));	//Fixed Position
 }
 
 /**
@@ -238,8 +248,8 @@ void SliceWidget::enterEvent(QEvent *e) {
 	m_is_cursor_on = true;
 
 	// Move Coordinator dynamically based on label size.
-	this->m_cur_coord->move(QPoint(m_size.width() - 150, m_size.height() - 20));
-	this->m_cur_coord->setVisible(true);
+	this->m_cur_coord_indicator->move(QPoint(m_size.width() - 150, m_size.height() - 25));
+	this->m_cur_coord_indicator->setVisible(true);
 }
 
 /**
@@ -248,7 +258,7 @@ void SliceWidget::enterEvent(QEvent *e) {
 void SliceWidget::leaveEvent(QEvent *e) {
 	m_is_cursor_on = false;
 
-	this->m_cur_coord->setVisible(false);
+	this->m_cur_coord_indicator->setVisible(false);
 }
 
 /* ===========================================================================

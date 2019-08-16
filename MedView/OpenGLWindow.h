@@ -7,8 +7,8 @@
 #include <QOpenGLVertexArrayObject>
 #include <QOpenGLTexture>
 #include <QKeyEvent>
-#include<QMatrix4x4>
-#include<QQuaternion>
+#include <QMatrix4x4>
+#include <QQuaternion>
 
 #include "DicomManager.h"
 #include "Utils/ArcBall.h"
@@ -27,7 +27,7 @@ public:
 	void loadObject();
 	void render();
 
-	
+	void setRenderMode(std::string);
 
 protected:
 	/* Qt Mouse Events */
@@ -39,6 +39,7 @@ protected:
 	/* OpenGL Events */
 	void exposeEvent(QExposeEvent *event);
 	void resizeEvent(QResizeEvent *);
+
 private:
 	DicomManager *m_dicom_manager;
 
@@ -46,7 +47,11 @@ private:
 
 	GLuint m_vao;
 	QOpenGLShaderProgram *m_raycast_firstpass_shader;
-	QOpenGLShaderProgram *m_raycast_shader;
+	QOpenGLShaderProgram *m_raycast_mip_shader;
+	QOpenGLShaderProgram *m_raycast_otf_shader;
+
+	enum RenderMode{MIP, OTF};
+	RenderMode m_rendering_mode;
 
 	//TODO:: rename this
 	bool volumeload = false;

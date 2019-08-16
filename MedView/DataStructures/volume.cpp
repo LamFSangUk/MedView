@@ -48,12 +48,32 @@ namespace vdcm {
 				volume->m_height = at_rows.GetValue();
 				volume->m_width = at_cols.GetValue();
 
+				// Rescale parameter
 				gdcm::Attribute<0x0028, 0x1052> at_rescale_intercept;
 				gdcm::Attribute<0x0028, 0x1053> at_rescale_slope;
 				at_rescale_intercept.Set(ds);
 				at_rescale_slope.Set(ds);
 				volume->m_rescale_intercept = at_rescale_intercept.GetValue();
 				volume->m_rescale_slope = at_rescale_slope.GetValue();
+
+				// Windowing parameter
+				gdcm::Attribute<0x0028, 0x1050> at_window_level;
+				gdcm::Attribute<0x0028, 0x1051> at_window_width;
+				at_window_level.Set(ds);
+				at_window_width.Set(ds);
+				volume->m_window_level = at_window_level.GetValue();
+				volume->m_window_width = at_window_width.GetValue();
+
+				// Slice spacing parameter
+				gdcm::Attribute<0x0028, 0x0030> at_pixel_spacing;
+				gdcm::Attribute<0x0018, 0x0050> at_slice_thickness;
+				gdcm::Attribute<0x0018, 0x1088> at_slice_spacing;
+				at_pixel_spacing.Set(ds);
+				at_slice_thickness.Set(ds);
+				at_slice_spacing.Set(ds);
+				// TODO:: save window parameter
+				//volume->m_rescale_intercept = at_rescale_intercept.GetValue();
+				//volume->m_rescale_slope = at_rescale_slope.GetValue();
 			}
 
 			const gdcm::Pixmap &image = reader.GetPixmap();
@@ -165,4 +185,7 @@ namespace vdcm {
 		return m_depth;
 	}
 
+	std::pair<int, int> Volume::getDefaultWindowing() {
+		return std::make_pair(m_window_level, m_window_width);
+	}
 }
